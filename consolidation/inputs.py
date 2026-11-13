@@ -124,6 +124,7 @@ class Inputs:
             refs = sources((row['_ref'],), *(p.refs for p in selected))
             if difference:
                 self.audit.issue('subledger_mismatch', refs, difference, row['currency'], 'flagged',
-                                 'Compare before journals. Preserve the balanced TB; no unsupported adjustment.')
+                                 'Compare before journals. Preserve the balanced TB; no unsupported adjustment.',
+                                 at=row['_ref'])
             else:
                 self.audit.check(f'{row["entity_id"]} {account} subledger agrees', True, refs)

@@ -41,8 +41,8 @@ class Audit:
     issues: list[dict] = field(default_factory=list)
     checks: list[dict] = field(default_factory=list)
 
-    def issue(self, code, refs, amount, currency, action, reason):
-        ref = next(iter(refs), 'data:1')
+    def issue(self, code, refs, amount, currency, action, reason, *, at=None):
+        ref = at or next(iter(refs), 'data:1')
         file, location = ref.split(':', 1)
         self.issues.append({
             'id': f'I{len(self.issues) + 1:03d}', 'code': code,

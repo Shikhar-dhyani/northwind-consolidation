@@ -25,14 +25,16 @@ def retranslate_uk(inputs, fx, postings):
             refs = sources(refs, rate_refs)
             reasons = ()
             inputs.audit.issue('monetary_retranslation', refs, delta, 'GBP', 'flagged',
-                               f'{currency} monetary balance retranslated at closing; counterpart to 7300.')
+                               f'{currency} monetary balance retranslated at closing; counterpart to 7300.',
+                               at=row['_ref'])
             if currency == 'SGD':
                 bank_value = translated
         except MissingRate as exc:
             delta = None
             reasons = (str(exc),)
             inputs.audit.issue('missing_closing_rate', refs, carrying, 'GBP', 'blocked',
-                               f'{exc}; bank and FX expense unknown. No use of average/opening as closing.')
+                               f'{exc}; bank and FX expense unknown. No use of average/opening as closing.',
+                               at=row['_ref'])
         postings.append(Posting('UK', group, delta, 'GBP', refs, 'entity_fx', currency, reasons))
         postings.append(Posting('UK', '7300', -delta if delta is not None else None,
                                 'GBP', refs, 'entity_fx', currency, reasons))
@@ -89,7 +91,8 @@ def record_transit(inputs, fx, postings):
                 Posting('UK', '2150', -value, 'GBP', evidence, 'transit', row['doc_ref']),
             ])
             inputs.audit.issue('invoice_in_transit', evidence, value, 'GBP', 'assumed',
-                               'US year-end invoice absent from UK; record receiving expense/payable at closing rate.')
+                               'US year-end invoice absent from UK; record receiving expense/payable at closing rate.',
+                               at=row['_ref'])
     receiver_closing, closing_refs = fx.convert(uk_foreign, 'USD', 'GBP', 'closing')
     sender_closing, _ = fx.convert(us_total, 'USD', 'GBP', 'closing')
     causes = {'initial_balance_difference': sender_closing - uk_booked,
