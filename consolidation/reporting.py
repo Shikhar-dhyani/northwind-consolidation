@@ -3,6 +3,7 @@
 import csv
 import hashlib
 import json
+import re
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 
@@ -147,7 +148,14 @@ def emit_failure(out, audit, error):
     """Replace all financial outputs on failure; never leave a previous good run."""
     out.mkdir(parents=True, exist_ok=True)
     reason = f'Input/control failure: {error}'
-    audit.issue('fatal_input_control', ('data:1',), None, '', 'blocked', reason)
+    refs = getattr(error, 'refs', ())
+    if not refs:
+        found = re.search(r'data/[\w.]+:\d+', str(error))
+        filename = getattr(error, 'filename', None)
+        refs = (found[0] if found else f'data/{Path(filename).name}:1'
+                if filename else 'data/entities.csv:1',)
+    primary = next((ref for ref in refs if '/tb_' in ref), refs[0])
+    audit.issue('fatal_input_control', refs, None, '', 'blocked', reason, at=primary)
     for name in ('balance_sheet.json', 'profit_and_loss.json', 'changes_in_equity.json'):
         write_json(out / name, {'status': 'blocked', 'reason': reason})
     write_json(out / 'control_figures_sd.json', {key: None for key in CONTROL_KEYS})

@@ -142,6 +142,8 @@ def test_unbalanced_input_replaces_previous_outputs(bundle, tmp_path):
         run(bundle, out)
     assert all(v is None for v in read_json(out / 'control_figures_sd.json').values())
     assert read_json(out / 'validation.json')['status'] == 'failed'
+    fatal = read_json(out / 'issues.json')[-1]
+    assert fatal['file'] == 'data/tb_us.csv'
     assert len((out / 'ledger_postings.csv').read_text().splitlines()) == 1
 
 

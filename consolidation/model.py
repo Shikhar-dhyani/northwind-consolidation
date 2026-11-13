@@ -10,6 +10,10 @@ EPSILON = Decimal('1e-25')
 class InputError(ValueError):
     """The input cannot safely enter the calculation."""
 
+    def __init__(self, message, refs=()):
+        super().__init__(message)
+        self.refs = tuple(refs)
+
 
 def decimal(value: str) -> Decimal:
     try:
@@ -56,7 +60,7 @@ class Audit:
         self.checks.append({'name': name, 'passed': bool(passed),
                             'sources': list(refs), 'detail': detail})
         if not passed:
-            raise InputError(f'Control failed: {name}. {detail}')
+            raise InputError(f'Control failed: {name}. {detail}', refs)
 
 
 def total(postings, *, account=None, entity=None):
