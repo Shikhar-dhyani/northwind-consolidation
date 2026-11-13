@@ -1,6 +1,7 @@
 """Strict ERP adapters; source files are never rewritten."""
 
 import csv
+import hashlib
 import json
 from pathlib import Path
 
@@ -50,6 +51,10 @@ class Inputs:
         return result
 
     def load(self):
+        # Rules below implement this reviewed policy version, not arbitrary prose.
+        policy = self.root / 'group_policies.md'
+        if hashlib.sha256(policy.read_bytes()).hexdigest() != '00888e755e03b2b275bb9b77b5e71916a26b2a23cfda4dffd1dbd47447cc05d4':
+            raise InputError('data/group_policies.md:1: changed policy version requires reviewed implementation')
         self.entities = self.unique('entities.csv', 'entity_id')
         expected = {'US': ('USD', '', ''), 'UK': ('GBP', '100', '2016-03-01'),
                     'IN': ('INR', '80', '2024-07-01')}

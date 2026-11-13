@@ -211,3 +211,10 @@ def test_stale_subledger_control_is_blocked(bundle, tmp_path):
     mutate_csv(bundle / 'subledger_controls.csv', lambda rows: rows[0].update(as_of='2023-12-31'))
     with pytest.raises(InputError, match='subledger scope/date/currency'):
         run(bundle, tmp_path / 'out')
+
+
+def test_changed_policy_requires_review(bundle, tmp_path):
+    path = bundle / 'group_policies.md'
+    path.write_text(path.read_text().replace('closing rate', 'average rate'))
+    with pytest.raises(InputError, match='changed policy version'):
+        run(bundle, tmp_path / 'out')
