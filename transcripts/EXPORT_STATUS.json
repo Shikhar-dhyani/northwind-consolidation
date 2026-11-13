@@ -1,7 +1,7 @@
 {
   "source_session": "rollout-2026-11-13T21-15-10-01a1d595-897b-7970-b806-8e5bf2d6f652.jsonl",
-  "last_record_timestamp": "2026-11-13T16:14:46.573Z",
-  "exported_records": 65,
+  "last_record_timestamp": "2026-11-13T16:20:37.286Z",
+  "exported_records": 82,
   "current_session_complete": false,
   "earlier_planning_sessions_available": false,
   "redactions": [
@@ -12,11 +12,11 @@
   ],
   "excluded_internal_record_counts": {
     "session_meta": 1,
-    "event_msg": 128,
-    "internal_response_item": 48,
+    "event_msg": 160,
+    "internal_response_item": 59,
     "world_state": 1,
     "turn_context": 1,
-    "token_usage_record": 27
+    "token_usage_record": 34
   },
   "note": "Visible messages and tool calls/results in original order, including mistakes. Snapshot taken during the session; refresh after completion. Earlier planning exports still required."
 }
