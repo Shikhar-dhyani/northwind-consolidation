@@ -41,8 +41,16 @@ class Inputs:
             entry['_ref'] = f'data/adjustments.json:{line}#/entries/{index}'
         return entries
 
+    def unique(self, name, key):
+        result = {}
+        for row in self.csv(name):
+            if row[key] in result:
+                raise InputError(f'{row["_ref"]}: duplicate {key} {row[key]}')
+            result[row[key]] = row
+        return result
+
     def load(self):
-        self.entities = {r['entity_id']: r for r in self.csv('entities.csv')}
+        self.entities = self.unique('entities.csv', 'entity_id')
         expected = {'US': ('USD', '', ''), 'UK': ('GBP', '100', '2016-03-01'),
                     'IN': ('INR', '80', '2024-07-01')}
         if set(self.entities) != set(expected):
@@ -51,7 +59,11 @@ class Inputs:
             row = self.entities[entity]
             if (row['functional_currency'], row['ownership_pct'], row['acquisition_date']) != values:
                 raise InputError(f'{entity}: changed scope/ownership requires reviewed configuration')
-        self.coa = {r['account_code']: r for r in self.csv('group_coa.csv')}
+        self.coa = self.unique('group_coa.csv', 'account_code')
+        for code, row in self.coa.items():
+            expected_statement = 'PL' if row['account_type'] in ('Revenue', 'Expense') else 'BS'
+            if row['account_type'] not in ('Asset', 'Liability', 'Equity', 'Revenue', 'Expense') or row['statement'] != expected_statement:
+                raise InputError(f'{row["_ref"]}: inconsistent account type/statement for {code}')
         self.maps = {'US': {code: (code, ()) for code in self.coa}}
         for entity, name in [('UK', 'map_uk.csv'), ('IN', 'map_in.csv')]:
             self.maps[entity] = {}
@@ -71,7 +83,7 @@ class Inputs:
         for entity in ('US', 'UK', 'IN'):
             rows = self.csv(self.entities[entity]['tb_file'])
             self.local_rows[entity] = rows
-            used, counts = set(), {}
+            used, counts, local_refs = set(), {}, {}
             entity_posts = []
             for row in rows:
                 code = row[{'US': 'account_code', 'UK': 'nominal_code', 'IN': 'ledger_code'}[entity]]
@@ -93,6 +105,7 @@ class Inputs:
                 group, map_refs = self.maps[entity][code]
                 used.add(code)
                 counts[code] = counts.get(code, 0) + 1
+                local_refs.setdefault(code, []).append(row['_ref'])
                 entity_posts.append(Posting(entity, group, amount,
                     self.entities[entity]['functional_currency'],
                     sources((row['_ref'],), map_refs, (self.coa[group]['_ref'],))))
@@ -102,7 +115,7 @@ class Inputs:
             for code, count in counts.items():
                 if count > 1:
                     self.audit.issue('repeated_local_account',
-                        tuple(r['_ref'] for r in rows if r.get('nominal_code') == code),
+                        tuple(local_refs[code]),
                         sum((p.amount for p in entity_posts if p.account == self.maps[entity][code][0]), ZERO),
                         self.entities[entity]['functional_currency'], 'flagged',
                         f'{code}: {count} source rows retained and aggregated; no last-row overwrite.')
