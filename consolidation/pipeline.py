@@ -8,7 +8,7 @@ from .accounting import (block_uk_acquisition, eliminate_india, eliminate_interc
 from .fx import FxBook
 from .inputs import Inputs
 from .journals import apply_journals
-from .model import Audit, InputError, sources, total
+from .model import Audit, EPSILON, InputError, total
 from .periods import cut_india
 from .reporting import build_reports, emit, emit_failure
 
@@ -36,9 +36,9 @@ def run(data: Path, out: Path):
             eliminations.extend(block_uk_acquisition(inputs, translated))
             for code in ('1250', '2150', '4200', '6300', '1610'):
                 value = total(translated, account=code)
-                audit.check(f'{code} eliminated in full', abs(value['value']) < 10 ** -25, value['sources'])
+                audit.check(f'{code} eliminated in full', abs(value['value']) < EPSILON, value['sources'])
             audit.check('NCI account matches closing control',
-                abs(-total(translated, account='3400')['value'] - india['nci_closing']) < 10 ** -25,
+                abs(-total(translated, account='3400')['value'] - india['nci_closing']) < EPSILON,
                 india['sources'])
             reports, accounts = build_reports(inputs, translated, opening, india, bank, counts, causes, ic_refs)
             emit(out, inputs, reports, accounts, translated, eliminations, journals)

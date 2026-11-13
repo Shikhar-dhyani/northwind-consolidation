@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
 
 ZERO = Decimal('0')
+EPSILON = Decimal('1e-25')
 
 
 class InputError(ValueError):
