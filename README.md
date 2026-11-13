@@ -92,11 +92,17 @@ conversion. [ARCHITECTURE.md](ARCHITECTURE.md) explains the accounting stages.
 - [Validation](VALIDATION.md): independent calculations, mutation tests and actual AI fixes.
 - [Reflection](REFLECTION.md): one-page reflection.
 - [Transcripts](transcripts/README.md): current session export and explicit coverage limitations.
+- [Candidate guide](CANDIDATE_GUIDE.md): decision context, alternatives, rationale, journal/control answers and reviewer Q&A.
+- [Review runbook](REVIEW_RUNBOOK.md): a 45-minute walkthrough and input-change examples.
+- [Clarifications](CLARIFICATIONS.md): missing evidence, current treatment and what would change.
+- [Submission](SUBMISSION.md): deliverable checklist and archive-building instructions.
+- [Email draft](SUBMISSION_EMAIL.md): prepared text for the original assignment email thread.
 
-**Submission status:** earlier AI planning-session exports still need to be supplied.
-The handoff is context, not a replacement for those full sessions. The current session
-export is a snapshot; refresh it after the conversation finishes. No submission email
-has been sent. Keep the full Git history; do not squash it.
+Both known contributing conversations are represented: the original Claude planning
+text supplied by the candidate and the Codex implementation record. The current Codex
+turn is captured through a stated snapshot boundary; refreshing after it ends includes
+the final records. The Claude text is preserved without reconstructed roles/tool output.
+No submission email has been sent. Keep the full Git history; do not squash it.
 
 ## Scope
 

@@ -169,7 +169,7 @@ invoice/TB ties, explained IC differences, balanced elimination journals, cleare
 India investment accounts, and the NCI roll-forward. Independently derived financial
 oracles and input mutations test accounting effects, not merely implementation branches.
 Adding a supplied SGD closing rate releases group profit but leaves acquisition blockers.
-Adding a GBP 1,000 UK cash sale increases revenue and owners' profit by GBP 1,000,
+In that resolved-rate scenario, a GBP 1,000 UK cash sale increases revenue and owners' profit by GBP 1,000,
 with no NCI effect. Full details and genuine AI-error fix commits are in VALIDATION.md.
 
 The engine has no autonomous self-correction that silently modifies financial evidence.
@@ -184,5 +184,6 @@ or atomic multi-file publication. Financial files are rewritten on a caught fail
 OS-level interruption could leave a mixed folder and requires rerunning. Production
 publication needs immutable staged runs with an atomic ready pointer and access control.
 At scale, stream/partition ledger data and normalize provenance rather than repeating
-large source lists. The current AI-session export is a snapshot and previous planning
-sessions still need their original exports before this is a complete submission package.
+large source lists. The Claude planning conversation is preserved as supplied by the
+candidate; the Codex record includes completed turns and the active turn through its
+snapshot boundary. Refresh it after the active turn closes to include its final records.

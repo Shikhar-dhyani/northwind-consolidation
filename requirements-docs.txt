@@ -1,0 +1,3 @@
+# Optional PDF rendering only; not needed to run the consolidation.
+reportlab==4.4.9
+pypdf==6.21.4

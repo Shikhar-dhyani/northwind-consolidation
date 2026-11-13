@@ -5,7 +5,7 @@ Tests use temporary copies when changing inputs. The committed source bundle is 
 edited. Runtime uses Decimal at precision 40; two-place rounding happens at output only.
 Passing controls validate the supported workings, not the blocked financial statements.
 
-Latest local verification: **23 tests passed** on Windows with Python 3.14.3, including
+Latest local verification: **26 tests passed** on Windows with Python 3.14.3, including
 a fresh local Git clone, source-byte integrity, and the one-command output run. The CI
 workflow is configured for Python 3.11 and 3.14 on Linux; no remote CI run is claimed.
 
@@ -98,5 +98,8 @@ The accounting rules are checked against this supplied policy and scope, not ext
 certified. Exact-label remapping and held-journal dispositions need finance review.
 The parser is deliberately narrow for acquisition prose. Group opening reserves cannot
 stand in for a missing UK acquisition history or the parent's historical equity basis.
-The current export covers the visible Codex session through its last snapshot; earlier
-planning sessions still require their full original exports before submission.
+The supplied Claude planning text is captured verbatim with a SHA-256 and provenance.
+Its completeness is candidate-provided, not independently verified against Claude.
+The Codex export preserves visible records through its snapshot boundary, with completed
+turns counted. Its completion flag now follows actual session events rather than always
+remaining false. Privacy tests cover unrelated chat metadata returned by discovery.
