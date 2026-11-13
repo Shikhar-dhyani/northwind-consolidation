@@ -48,7 +48,7 @@ def test_pasted_claude_record_is_preserved_verbatim(tmp_path):
 def test_private_discovery_metadata_is_redacted_at_multiple_json_depths():
     raw = json.dumps({'threads': [{'id': 'preserved', 'title': 'Private title',
         'summary': 'Private work with "quoted", text and trailing \\'}]})
-    for depth in range(3):
+    for depth in range(4):
         cleaned = redact(raw)
         assert 'Private title' not in cleaned
         assert 'Private work' not in cleaned
