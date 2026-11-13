@@ -1,22 +1,25 @@
 {
   "source_session": "rollout-2026-11-13T21-15-10-01a1d595-897b-7970-b806-8e5bf2d6f652.jsonl",
-  "last_record_timestamp": "2026-11-13T16:20:37.286Z",
-  "exported_records": 82,
+  "last_record_timestamp": "2026-11-13T18:30:14.957Z",
+  "exported_records": 126,
   "current_session_complete": false,
-  "earlier_planning_sessions_available": false,
+  "completed_turns": 2,
+  "active_turn_included_through_snapshot": true,
+  "earlier_planning_sessions_available": true,
   "redactions": [
     "personal home path",
     "candidate name",
     "email addresses",
-    "recognized API keys"
+    "recognized API keys",
+    "private chat titles and summaries returned by discovery"
   ],
   "excluded_internal_record_counts": {
     "session_meta": 1,
-    "event_msg": 160,
-    "internal_response_item": 59,
-    "world_state": 1,
-    "turn_context": 1,
-    "token_usage_record": 34
+    "event_msg": 273,
+    "internal_response_item": 107,
+    "world_state": 3,
+    "turn_context": 3,
+    "token_usage_record": 54
   },
-  "note": "Visible messages and tool calls/results in original order, including mistakes. Snapshot taken during the session; refresh after completion. Earlier planning exports still required."
+  "note": "Visible messages and tool calls/results in original order, including mistakes. Completion is detected from session events. An active turn is captured through the snapshot boundary; rerun after it finishes to include its final records. See SESSIONS.json for prior-session provenance."
 }

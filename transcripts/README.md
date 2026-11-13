@@ -9,6 +9,11 @@ Internal platform instructions, private reasoning and telemetry are not user-vis
 conversation records and are excluded. Tool results may themselves be truncated by
 the tool at execution time; the export preserves what the tool actually returned.
 
+`claude-planning.txt` preserves the original planning conversation exactly as pasted
+by the candidate. `SESSIONS.json` records its source and SHA-256. No speaker labels,
+missing tool records or attachments have been reconstructed. Completeness of the pasted
+Claude record is candidate-provided, rather than independently verified against Claude.
+
 The current conversation is still in progress when exported. Refresh after it finishes:
 
 ```bash
@@ -18,10 +23,11 @@ python scripts/export_transcript.py --source <path-to-original-session.jsonl>
 Inside the same Codex session, `python scripts/export_transcript.py` can locate the log
 from its session identifier. The exporter cannot include its own later result or final
 message in the same snapshot; rerun after the session ends for those final records.
-The coverage flag deliberately remains incomplete until reviewed after that refresh.
+Completion is now detected from actual session start/completion events. Completed turns
+are counted, and an ongoing turn is explicitly identified with its snapshot boundary.
 
-**Earlier sessions are missing.** The supplied handoff describes prior AI planning,
-but contains no full earlier session export. Add those original exports or shared links
-here before submission; a handoff is not a replacement transcript. No reconstructed
-conversation has been presented as an original session. This is the remaining packaging
-requirement even though the local prototype and supporting documents are present.
+Both known contributing conversations are represented: the candidate-supplied Claude
+planning text and this Codex implementation session. Failed attempts and test failures
+remain in the Codex record. Private titles and summaries of unrelated chats returned
+during discovery are redacted as personal data; tool calls/results remain in place.
+If another AI session contributed, include its original record as well.
