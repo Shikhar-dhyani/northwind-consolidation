@@ -73,6 +73,8 @@ def record_transit(inputs, fx, postings):
     transit = ZERO
     transit_refs = []
     for row in uk:
+        if row['booked_currency'] != 'GBP':
+            raise InputError(f'{row["_ref"]}: unsupported UK invoice booked currency')
         other = keyed.get(('US', row['doc_ref']))
         if other is None or any(row[k] != other[k] for k in ('doc_currency', 'doc_amount', 'doc_date')):
             raise InputError(f'{row["_ref"]}: unmatched/disputed UK invoice')

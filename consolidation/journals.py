@@ -46,6 +46,10 @@ def apply_journals(inputs, postings):
         if status == 'posted' and fingerprint in fingerprints:
             status = 'held_for_review'
             reason = f'Identical economic lines/date to {fingerprints[fingerprint]}; possible duplicate.'
+        if status == 'posted' and entity == 'IN' and when < date(2024, 7, 1):
+            status, reason = 'held_for_review', 'Pre-acquisition journal requires revised completion accounts and period evidence.'
+        if status == 'posted' and any(inputs.coa[p.account]['account_type'] == 'Equity' for p in mapped):
+            status, reason = 'held_for_review', 'Equity adjustment requires a reviewed historical-rate and group-equity movement schedule.'
         if status == 'posted':
             # A reversal beyond the available liability needs its underlying accrual.
             for p in mapped:

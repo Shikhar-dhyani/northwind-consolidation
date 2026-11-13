@@ -59,6 +59,8 @@ class Inputs:
             row = self.entities[entity]
             if (row['functional_currency'], row['ownership_pct'], row['acquisition_date']) != values:
                 raise InputError(f'{entity}: changed scope/ownership requires reviewed configuration')
+            if row['tb_file'] != f'tb_{entity.lower()}.csv':
+                raise InputError(f'{row["_ref"]}: unsupported TB filename')
         self.coa = self.unique('group_coa.csv', 'account_code')
         for code, row in self.coa.items():
             expected_statement = 'PL' if row['account_type'] in ('Revenue', 'Expense') else 'BS'
@@ -130,7 +132,12 @@ class Inputs:
 
     def subledger_controls(self, postings):
         for row in self.csv('subledger_controls.csv'):
-            account = '1200' if row['ledger'] == 'Accounts receivable (trade)' else '2100'
+            ledgers = {'Accounts receivable (trade)': '1200', 'Accounts payable (trade)': '2100'}
+            if (row['entity_id'] not in self.entities or row['ledger'] not in ledgers
+                    or row['as_of'] != '2024-12-31'
+                    or row['currency'] != self.entities[row['entity_id']]['functional_currency']):
+                raise InputError(f'{row["_ref"]}: unsupported subledger scope/date/currency')
+            account = ledgers[row['ledger']]
             selected = [p for p in postings if p.entity == row['entity_id'] and p.account == account]
             tb = abs(sum((p.amount for p in selected), ZERO))
             difference = tb - decimal(row['control_total'])

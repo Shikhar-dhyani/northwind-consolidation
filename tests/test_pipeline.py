@@ -181,3 +181,33 @@ def test_output_cannot_overwrite_inputs(bundle):
     with pytest.raises(InputError, match='separate'):
         run(bundle, bundle)
     assert (bundle / 'adjustments.json').read_bytes() == original
+
+
+def test_pre_acquisition_journal_is_held_for_completion_evidence(bundle, tmp_path):
+    path = bundle / 'adjustments.json'
+    batch = json.loads(path.read_text())
+    batch['entries'][11]['date'] = '2024-06-30'
+    path.write_text(json.dumps(batch))
+    controls = run(bundle, tmp_path / 'out')
+    assert controls['journals']['held_for_review'] == 6
+    decisions = read_json(tmp_path / 'out/journal_decisions.json')
+    decision = next(d for d in decisions if d['id'] == 'JE-012')
+    assert 'Pre-acquisition' in decision['reason']
+
+
+def test_equity_journal_needs_historical_movement_evidence(bundle, tmp_path):
+    path = bundle / 'adjustments.json'
+    batch = json.loads(path.read_text())
+    batch['entries'].append({'id': 'JE-021', 'entity': 'US', 'date': '2024-12-31',
+        'description': 'Issue shares', 'lines': [
+            {'account': '1100', 'debit': '1000', 'credit': '0'},
+            {'account': '3100', 'debit': '0', 'credit': '1000'}]})
+    path.write_text(json.dumps(batch))
+    controls = run(bundle, tmp_path / 'out')
+    assert controls['journals']['held_for_review'] == 6
+
+
+def test_stale_subledger_control_is_blocked(bundle, tmp_path):
+    mutate_csv(bundle / 'subledger_controls.csv', lambda rows: rows[0].update(as_of='2023-12-31'))
+    with pytest.raises(InputError, match='subledger scope/date/currency'):
+        run(bundle, tmp_path / 'out')
