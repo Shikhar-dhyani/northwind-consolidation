@@ -72,6 +72,7 @@ class Inputs:
             if row['account_type'] not in ('Asset', 'Liability', 'Equity', 'Revenue', 'Expense') or row['statement'] != expected_statement:
                 raise InputError(f'{row["_ref"]}: inconsistent account type/statement for {code}')
         self.maps = {'US': {code: (code, ()) for code in self.coa}}
+        mapping_issues = {}
         for entity, name in [('UK', 'map_uk.csv'), ('IN', 'map_in.csv')]:
             self.maps[entity] = {}
             for row in self.csv(name):
@@ -80,7 +81,7 @@ class Inputs:
                     raise InputError(f'{row["_ref"]}: duplicate or invalid mapping')
                 # Narrow, explainable correction: exact chart label, no fuzzy inference.
                 if row['local_name'] == 'Deferred income' and group != '2300':
-                    self.audit.issue('mapping_classification', (row['_ref'],), None, 'GBP',
+                    mapping_issues[(entity, code)] = self.audit.issue('mapping_classification', (row['_ref'],), ZERO, 'GBP',
                                      'assumed', 'Exact Deferred income label mapped to revenue; '
                                      'override to liability 2300, preserving the source file.')
                     group = '2300'
@@ -116,6 +117,10 @@ class Inputs:
                 entity_posts.append(Posting(entity, group, amount,
                     self.entities[entity]['functional_currency'],
                     sources((row['_ref'],), map_refs, (self.coa[group]['_ref'],))))
+                correction = mapping_issues.get((entity, code))
+                if correction is not None:
+                    correction['amount_affected'] += abs(amount)
+                    correction['sources'] = list(sources(correction['sources'], (row['_ref'],)))
             refs = sources(*(p.refs for p in entity_posts))
             self.audit.check(f'{entity} source TB balances',
                              sum((p.amount for p in entity_posts), ZERO) == ZERO, refs)

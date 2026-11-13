@@ -5,6 +5,10 @@ Tests use temporary copies when changing inputs. The committed source bundle is 
 edited. Runtime uses Decimal at precision 40; two-place rounding happens at output only.
 Passing controls validate the supported workings, not the blocked financial statements.
 
+Latest local verification: **23 tests passed** on Windows with Python 3.14.3, including
+a fresh local Git clone, source-byte integrity, and the one-command output run. The CI
+workflow is configured for Python 3.11 and 3.14 on Linux; no remote CI run is claimed.
+
 ## Coded controls
 
 - Three source TBs balance; posted journals balance and leave adjusted local TBs balanced.

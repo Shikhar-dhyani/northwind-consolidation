@@ -55,6 +55,7 @@ class Audit:
             'sources': list(refs), 'amount_affected': amount,
             'currency': currency, 'action': action, 'reason': reason,
         })
+        return self.issues[-1]
 
     def check(self, name, passed, refs=(), detail=''):
         self.checks.append({'name': name, 'passed': bool(passed),
