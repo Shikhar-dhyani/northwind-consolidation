@@ -1,6 +1,6 @@
 import json
 
-from scripts.export_transcript import export, redact
+from scripts.export_transcript import export, redact, redact_discovery
 
 
 def test_export_preserves_failed_tool_record_and_omits_private_records(tmp_path):
@@ -46,10 +46,10 @@ def test_pasted_claude_record_is_preserved_verbatim(tmp_path):
 
 
 def test_private_discovery_metadata_is_redacted_at_multiple_json_depths():
-    raw = json.dumps({'threads': [{'id': 'preserved', 'title': 'Private title',
+    raw = json.dumps({'threads': [{'id': 'preserved', 'kind': 'codex', 'title': 'Private title',
         'summary': 'Private work with "quoted", text and trailing \\'}]})
     for depth in range(4):
-        cleaned = redact(raw)
+        cleaned = redact_discovery(raw)
         assert 'Private title' not in cleaned
         assert 'Private work' not in cleaned
         assert 'preserved' in cleaned
@@ -58,3 +58,27 @@ def test_private_discovery_metadata_is_redacted_at_multiple_json_depths():
             decoded = json.loads(decoded)
         assert decoded['threads'][0]['summary'] == '[REDACTED PRIVATE CHAT METADATA]'
         raw = json.dumps(raw)
+
+
+def test_nonpersonal_financial_summary_and_ai_mistake_are_preserved():
+    raw = '{"summary":"JE-006 was wrongly accepted in this draft", "title":"Financial draft"}'
+    assert redact(raw) == raw
+
+
+def test_only_identified_discovery_results_redact_private_chat_fields(tmp_path):
+    source, target = tmp_path / 'session.jsonl', tmp_path / 'out/transcript.jsonl'
+    discovery = json.dumps({'threads': [{'id': 'unrelated', 'kind': 'chatgpt', 'title': 'Private work'}],
+                            'summary': 'Preserve this ordinary summary'})
+    rows = [
+        {'type': 'response_item', 'payload': {'type': 'custom_tool_call', 'call_id': 'one',
+            'name': 'exec', 'input': 'await tools.mcp__codex_app__list_threads({});'}},
+        {'type': 'response_item', 'payload': {'type': 'custom_tool_call_output', 'call_id': 'one', 'output': discovery}},
+        {'type': 'response_item', 'payload': {'type': 'message', 'role': 'assistant',
+            'content': [{'type': 'output_text', 'text': '{"summary":"An AI mistake"}'}]}},
+    ]
+    source.write_text(''.join(json.dumps(row) + '\n' for row in rows))
+    export(source, target)
+    result = target.read_text()
+    assert 'Private work' not in result
+    assert 'Preserve this ordinary summary' in result
+    assert 'An AI mistake' in result

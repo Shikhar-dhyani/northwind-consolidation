@@ -15,31 +15,64 @@ import re
 VISIBLE_TOOLS = {'function_call', 'function_call_output', 'custom_tool_call', 'custom_tool_call_output'}
 
 
-def redact_private_fields(text):
-    for depth in reversed(range(4)):
-        slashes = 2 ** depth - 1
-        quote = '\\' * slashes + '"'
-        pattern = (re.escape(quote) + r'(?:title|summary)' + re.escape(quote)
-                   + r'\s*:\s*' + re.escape(quote))
-        pieces, cursor = [], 0
-        for match in re.finditer(pattern, text):
-            if match.start() < cursor:
-                continue
-            end = match.end()
-            while end < len(text):
-                if text[end] == '"':
-                    before = end - 1
-                    while before >= 0 and text[before] == '\\':
-                        before -= 1
-                    count = end - before - 1
-                    if count % (2 ** (depth + 1)) == slashes:
-                        pieces.extend((text[cursor:match.end()], '[REDACTED PRIVATE CHAT METADATA]'))
-                        cursor = end - slashes
-                        break
-                end += 1
-        pieces.append(text[cursor:])
-        text = ''.join(pieces)
-    return text
+def redact_discovery(value):
+    """Redact exact private chat fields only in an identified discovery result."""
+    private = set()
+    decoder = json.JSONDecoder()
+
+    def collect(node):
+        if isinstance(node, dict):
+            if node.get('kind') in ('codex', 'chatgpt') and node.get('id') != os.environ.get('CODEX_THREAD_ID'):
+                private.update(v for k, v in node.items() if k in ('title', 'summary') and isinstance(v, str) and v)
+            for item in node.values():
+                collect(item)
+        elif isinstance(node, list):
+            for item in node:
+                collect(item)
+        elif isinstance(node, str):
+            try:
+                decoded = json.loads(node)
+            except ValueError:
+                pass
+            else:
+                collect(decoded)
+                return
+            position = 0
+            while position < len(node):
+                match = re.search(r'[\[{]', node[position:])
+                if not match:
+                    break
+                position += match.start()
+                try:
+                    parsed, end = decoder.raw_decode(node, position)
+                except ValueError:
+                    position += 1
+                else:
+                    collect(parsed)
+                    position = end
+    collect(value)
+
+    def replace_fields(node):
+        if isinstance(node, dict):
+            return {k: ('[REDACTED PRIVATE CHAT METADATA]' if k in ('title', 'summary') and isinstance(v, str)
+                        and v in private else replace_fields(v)) for k, v in node.items()}
+        if isinstance(node, list):
+            return [replace_fields(item) for item in node]
+        if isinstance(node, str):
+            for secret in sorted(private, key=len, reverse=True):
+                for ascii_only in (True, False):
+                    quote, encoded = '"', json.dumps(secret, ensure_ascii=ascii_only)[1:-1]
+                    for _ in range(5):
+                        pattern = (re.escape(quote) + r'(?:title|summary)' + re.escape(quote)
+                                   + r'\s*:\s*' + re.escape(quote) + r'(?P<value>' + re.escape(encoded)
+                                   + ')' + re.escape(quote))
+                        node = re.sub(pattern, lambda m: m[0][:m.start('value') - m.start()]
+                            + '[REDACTED PRIVATE CHAT METADATA]' + m[0][m.end('value') - m.start():], node)
+                        quote = json.dumps(quote)[1:-1]
+                        encoded = json.dumps(encoded, ensure_ascii=ascii_only)[1:-1]
+            return node
+        return node
+    return replace_fields(value)
 
 
 def redact(value):
@@ -50,9 +83,7 @@ def redact(value):
         value = value.replace('Shikhar Dhyani', '[REDACTED NAME]')
         value = re.sub(r'[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}', '[REDACTED EMAIL]', value)
         value = re.sub(r'\bsk-[A-Za-z0-9_-]{16,}\b', '[REDACTED API KEY]', value)
-        # Chat discovery can return private, unrelated conversation metadata. Keep
-        # the calls/results and their ordering, but redact these personal fields.
-        return redact_private_fields(value)
+        return value
     if isinstance(value, list):
         return [redact(item) for item in value]
     if isinstance(value, dict):
@@ -101,6 +132,7 @@ def export(source: Path, target: Path):
     target.parent.mkdir(parents=True, exist_ok=True)
     capture_planning(records, target.parent)
     active, completed_turns = False, 0
+    discovery_calls = set()
     for record in records:
         if record.get('type') == 'event_msg':
             kind = record['payload'].get('type')
@@ -113,12 +145,18 @@ def export(source: Path, target: Path):
             excluded[record.get('type', 'unknown')] += 1
             continue
         item = record['payload']
+        if item.get('type') in ('custom_tool_call', 'function_call') and (
+                'tools.mcp__codex_app__list_threads({' in item.get('input', '')
+                or item.get('name', '').endswith('__list_threads')):
+            discovery_calls.add(item.get('call_id'))
         visible = (item.get('type') == 'message' and item.get('role') in ('user', 'assistant')
                    and item.get('channel') not in ('analysis', 'summary')) or item.get('type') in VISIBLE_TOOLS
         if not visible:
             excluded['internal_response_item'] += 1
             continue
         payload = {k: v for k, v in item.items() if k != 'internal_chat_message_metadata_passthrough'}
+        if item.get('type') in ('custom_tool_call_output', 'function_call_output') and item.get('call_id') in discovery_calls:
+            payload = {**payload, 'output': redact_discovery(payload.get('output'))}
         included.append(redact({'timestamp': record.get('timestamp'), 'type': 'response_item', 'payload': payload}))
     target.write_text(''.join(json.dumps(r, ensure_ascii=False) + '\n' for r in included), encoding='utf-8')
     registry_path = target.parent / 'SESSIONS.json'
