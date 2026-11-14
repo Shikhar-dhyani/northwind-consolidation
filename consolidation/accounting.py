@@ -114,6 +114,16 @@ def record_transit(inputs, fx, postings):
               'balance_residual_after_resolution': sender_closing - receiver_closing - transit}
     inputs.audit.check('IC balance difference explained',
         abs(causes['balance_residual_after_resolution']) < Decimal('1e-25'), refs)
+    coverage = {('US', '1250'): us_total, ('US', '4200'): -us_total,
+                ('UK', '2150'): -receiver_closing - transit, ('UK', '6300'): uk_booked + transit}
+    for entity in inputs.entities:
+        for account in ('1250', '2150', '4200', '6300'):
+            actual = total(postings, entity=entity, account=account)
+            expected = coverage.get((entity, account), ZERO)
+            evidence = sources(refs, actual['sources'], closing_refs, tuple(transit_refs))
+            inputs.audit.check(f'{entity} {account} IC invoice coverage',
+                actual['value'] is not None and abs(actual['value'] - expected) < Decimal('1e-25'), evidence,
+                'All mapped and manual IC postings must be supported by the invoice ledger before elimination.')
     return causes, sources(refs, tuple(transit_refs), closing_refs)
 
 

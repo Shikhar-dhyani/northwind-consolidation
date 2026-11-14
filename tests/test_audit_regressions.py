@@ -162,3 +162,17 @@ def test_alternative_lists_unknown_fx_not_covered_by_sgd_bank_assumption(bundle,
     assert {d['source_currency'] for d in result['unquantified_dependencies']} == {'EUR'}
     assert all(value is None for value in result['controls'].values())
     assert any(i['code'] == 'alternative_unquantified_dependency' for i in read_json(tmp_path / 'out/issues.json'))
+
+
+def test_mapping_external_sales_to_ic_income_is_blocked_by_invoice_coverage(bundle, tmp_path):
+    mutate_csv(bundle / 'map_uk.csv', lambda rows:
+        next(r for r in rows if r['local_code'] == '4000').update(group_code='4200'))
+    with pytest.raises(InputError, match='UK 4200 IC invoice coverage'):
+        run(bundle, tmp_path / 'out')
+    assert read_json(tmp_path / 'out/control_figures_sd.json')['group_revenue'] is None
+
+
+def test_unbacked_manual_ic_expense_is_not_swept_into_elimination(bundle, tmp_path):
+    journals(bundle, lambda batch: batch['entries'][6]['lines'][0].update(account='8210'))
+    with pytest.raises(InputError, match='UK 6300 IC invoice coverage'):
+        run(bundle, tmp_path / 'out')
