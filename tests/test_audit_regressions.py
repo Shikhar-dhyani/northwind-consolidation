@@ -101,3 +101,16 @@ def test_split_audit_fee_remains_a_duplicate_candidate(bundle, tmp_path):
     assert controls['journals'] == {'posted': 13, 'rejected': 2, 'held_for_review': 5}
     decisions = read_json(tmp_path / 'out/journal_decisions.json')
     assert next(d for d in decisions if d['id'] == 'JE-019')['status'] == 'held_for_review'
+
+
+def test_scenario_bank_carrying_value_and_disclosure_follow_source(bundle, tmp_path):
+    def update(rows):
+        rows[1]['balance'] = '24010.00'
+        rows[0]['balance'] = '1239000.00'
+    mutate_csv(bundle / 'tb_uk.csv', update)
+    run(bundle, tmp_path / 'out')
+    alternative = read_json(tmp_path / 'out/scenarios/alternative_disclosed_assumptions.json')
+    assert alternative['sgd_bank_reporting_amount'] == 24010
+    assert '24,010.00' in alternative['assumptions']['A2']
+    explanations = read_json(tmp_path / 'out/control_explanations.json')
+    assert '24,010.00' in ' '.join(explanations['sgd_bank_gbp']['reasons'])

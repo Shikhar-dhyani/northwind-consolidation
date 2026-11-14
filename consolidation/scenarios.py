@@ -67,8 +67,10 @@ def alternative(inputs, fx, opening, local, postings, india, bank, reports):
     inputs.audit.check('alternative equity independently rolls forward', abs(rolled - equity) < Decimal('1e-24'), refs)
     inputs.audit.check('alternative balance sheet balances', abs(assets - liabilities - equity) < Decimal('1e-24'), refs)
     uses_a2 = bank is None
+    bank_carrying = sum((Decimal(row['balance']) for row in inputs.local_rows['UK']
+        if row['txn_currency'] == 'SGD' and inputs.maps['UK'][row['nominal_code']][0] == '1100'), ZERO)
     if uses_a2:
-        reason = ('Closing valuation not determinable from inputs; GBP 23,010.00 carrying '
+        reason = (f'Closing valuation not determinable from inputs; GBP {bank_carrying:,.2f} carrying '
                   'amount under A2 only; see output/scenarios/alternative_disclosed_assumptions.json.')
         reports['control_explanations.json']['sgd_bank_gbp']['reasons'].append(reason)
         for issue in inputs.audit.issues:
@@ -95,7 +97,7 @@ def alternative(inputs, fx, opening, local, postings, india, bank, reports):
     inputs.audit.issue('alternative_scenario_assumptions', refs, None, 'GBP', 'assumed',
                        'Alternative only: A1 conditional historical net-equity bridge; A1.gross '
                        'no offsetting historical gross asset/liability adjustments; '
-                       + ('A2 SGD carried at GBP 23,010 with no FX adjustment.' if uses_a2
+                       + (f'A2 SGD carried at GBP {bank_carrying:,.2f} with no FX adjustment.' if uses_a2
                           else 'A2 not used: supplied SGD closing FX applied.'))
     return {'status': 'alternative_only_not_authoritative', 'currency': 'GBP',
         'translation_reserve_basis': 'Control translation_reserve_movement is owners-only account 3300. '
@@ -107,12 +109,12 @@ def alternative(inputs, fx, opening, local, postings, india, bank, reports):
                   'is zero within opening-source rounding and remains in GBP. This does not prove zero goodwill.',
             'A1.gross': 'For gross assets/liabilities only, additionally assume no offsetting historical '
                         'asset/liability adjustments, including UK goodwill. Net equity does not need this allocation.',
-            'A2': 'If closing SGD FX is missing, carry the bank at booked GBP 23,010 and record no FX '
+            'A2': f'If closing SGD FX is missing, carry the bank at booked GBP {bank_carrying:,.2f} and record no FX '
                   'remeasurement. This is a reporting assumption, not a closing valuation or compliance with policy 3.'},
         'active_assumptions': ['A1', 'A1.gross'] + (['A2'] if uses_a2 else []),
         'opening_equity_bridge': bridge, 'figure_dependencies': dependencies,
         'controls': values, 'sgd_bank_closing_measurement': bank,
-        'sgd_bank_reporting_amount': Decimal('23010') if uses_a2 else bank,
+        'sgd_bank_reporting_amount': bank_carrying if uses_a2 else bank,
         'profit_and_loss': {'group_profit': profit, 'profit_owners': owners, 'profit_nci': india['profit_nci']},
         'balance_sheet': {'total_assets': assets, 'total_liabilities': liabilities, 'total_equity': equity,
                           'residual': assets - liabilities - equity,
