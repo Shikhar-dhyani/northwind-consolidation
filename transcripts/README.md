@@ -9,17 +9,30 @@ Internal platform instructions, private reasoning and telemetry are not user-vis
 conversation records and are excluded. Tool results may themselves be truncated by
 the tool at execution time; the export preserves what the tool actually returned.
 
-`claude-planning.txt` preserves the original planning conversation exactly as pasted
-by the candidate. `SESSIONS.json` records its source and SHA-256. No speaker labels,
-missing tool records or attachments have been reconstructed. Completeness of the pasted
-Claude record is candidate-provided, rather than independently verified against Claude.
+There is **one continuous Claude session**, titled **Assignment explanation**. It covers
+the assignment explanation, accounting primers, README, handoff, opening-equity review,
+scenario discussion, audit prioritisation and closing checks. The actual audit ran in
+Codex; the candidate pasted its findings into that same Claude session. There is no
+separate Claude audit conversation.
+
+`claude-planning.txt` preserves the initial text exactly as pasted by the candidate.
+`SESSIONS.json` records its source and SHA-256. No speaker labels, missing tool records
+or attachments have been reconstructed. This file is partial, not a complete session.
 
 `claude-review-pasted-excerpts.jsonl` separately preserves the later review exchanges
 that the candidate pasted into this chat, including the audit and remediation discussion.
-`CLAUDE_REVIEW_PROVENANCE.json` records their source, hashes and coverage. These are
-supplied excerpts, not a complete native Claude review-session export; omitted external
-turns cannot be recovered from the Codex log. Add a native export or shared record if
-there are additional contributing exchanges outside those supplied here.
+`CLAUDE_REVIEW_PROVENANCE.json` records their source, hashes and coverage. Its six
+excerpts include the closing clarification of the session's scope. Both Claude files
+contain pieces of the same session; they do not establish complete native coverage.
+
+On 14 November 2026, Codex opened the matching task in Claude desktop and inspected
+the task menu and the app's File menu. Neither exposed Share, Export or a conversation
+copy command. The task menu offered Copy session ID, and individual messages offered
+Copy; neither supplies a complete native record with its tool activity. No complete
+native export or public share link was obtained. Missing turns have not been recreated
+from memory, and the partial files have not been renamed to imply completeness. This
+is a remaining limitation against the assignment's full, unedited transcript requirement.
+If a native record becomes available, add it with its provenance and update the index.
 
 The current conversation is still in progress when exported. Refresh after it finishes:
 
@@ -33,11 +46,13 @@ message in the same snapshot; rerun after the session ends for those final recor
 Completion is now detected from actual session start/completion events. Completed turns
 are counted, and an ongoing turn is explicitly identified with its snapshot boundary.
 
-Both known contributing conversations are represented: the candidate-supplied Claude
-planning text and this Codex implementation session. Failed attempts and test failures
+The two known contributing sessions are represented: partial records of the single
+Claude session and this Codex implementation session. Failed attempts and test failures
 remain in the Codex record. Private titles and summaries of unrelated chats returned
 during discovery are redacted as personal data; tool calls/results remain in place.
 This filtering is now scoped to identified discovery tool results and exact private chat
 field values. Ordinary JSON title/summary fields in user messages, AI drafts and other
-tools are preserved. The refreshed export restores such material from the original log.
+tools are preserved. Unrelated chat/project labels exposed in Claude's sidebar during
+the export check are redacted only in the corresponding UI results; the assignment task
+and its messages remain present. The refreshed export restores other material from the original log.
 If another AI session contributed, include its original record as well.

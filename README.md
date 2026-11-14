@@ -42,7 +42,7 @@ after rerunning the engine. Windows rename locks have bounded retries. A persist
 swap failure invalidates named financial files if they remain writable; process death
 or a wholly unwritable filesystem still needs operator recovery.
 
-Audit remediation is covered by **57 tests**, per-fix fresh-clone verification and
+Audit remediation and transcript handling are covered by **59 tests**, per-fix fresh-clone verification and
 unchanged default controls. See the cleaned summary and fix commits in VALIDATION.md.
 
 ## Current results
@@ -115,10 +115,11 @@ conversion. [ARCHITECTURE.md](ARCHITECTURE.md) explains the accounting stages.
 - [Submission](SUBMISSION.md): deliverable checklist and archive-building instructions.
 - [Email draft](SUBMISSION_EMAIL.md): prepared text for the original assignment email thread.
 
-Available records include the original Claude planning text supplied by the candidate,
-the later pasted Claude review excerpts, and the Codex implementation record. The
-review excerpts are explicitly partial; a full native Claude audit export/shared record
-has not been supplied. See transcripts/README.md for coverage and provenance. The current Codex
+Available records include the supplied planning text and later excerpts from one
+continuous Claude session, plus the Codex implementation record. The audit ran in
+Codex. The Claude records are explicitly partial: the matching desktop task's menus
+did not expose a complete export or share option. See transcripts/README.md for this
+remaining submission limitation and provenance. The current Codex
 turn is captured through a stated snapshot boundary; refreshing after it ends includes
 the final records. The Claude text is preserved without reconstructed roles/tool output.
 No submission email has been sent. Keep the full Git history; do not squash it.
