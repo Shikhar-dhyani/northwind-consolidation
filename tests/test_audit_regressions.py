@@ -1,4 +1,5 @@
 import json
+import csv
 import shutil
 from decimal import Decimal as D
 from pathlib import Path
@@ -114,3 +115,16 @@ def test_scenario_bank_carrying_value_and_disclosure_follow_source(bundle, tmp_p
     assert '24,010.00' in alternative['assumptions']['A2']
     explanations = read_json(tmp_path / 'out/control_explanations.json')
     assert '24,010.00' in ' '.join(explanations['sgd_bank_gbp']['reasons'])
+
+
+@pytest.mark.parametrize('local_code', ['1001', '1103', '0030', '2310'])
+def test_nonmonetary_foreign_transactions_keep_historical_gbp(bundle, tmp_path, local_code):
+    def mark_foreign(rows):
+        row = next(r for r in rows if r['nominal_code'] == local_code)
+        row.update(txn_currency='USD', txn_amount='800000.00')
+    mutate_csv(bundle / 'tb_uk.csv', mark_foreign)
+    run(bundle, tmp_path / 'out')
+    result = read_json(tmp_path / 'out/scenarios/alternative_disclosed_assumptions.json')
+    assert result['controls']['group_profit'] == D('2814702.81')
+    issues = read_json(tmp_path / 'out/issues.json')
+    assert any(i['code'] == 'nonmonetary_historical_carrying' for i in issues)

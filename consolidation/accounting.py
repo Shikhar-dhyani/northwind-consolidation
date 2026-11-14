@@ -10,15 +10,25 @@ from .model import InputError, Posting, ZERO, decimal, sources, total
 
 def retranslate_uk(inputs, fx, postings):
     bank_value = None
+    monetary = {'1100', '1200', '1250', '2100', '2150', '2200', '2400', '2500'}
+    nonmonetary = {'1300', '1400', '1500', '1510', '1600', '1610', '1700',
+                   '2300', '3100', '3200', '3300', '3400'}
     for row in inputs.local_rows['UK']:
         currency = row['txn_currency']
         if currency == 'GBP':
             continue
-        if not row['txn_amount']:
-            raise InputError(f'{row["_ref"]}: missing monetary transaction amount')
         group, map_refs = inputs.maps['UK'][row['nominal_code']]
         refs = sources((row['_ref'],), map_refs)
         carrying = decimal(row['balance'])
+        if group in nonmonetary or inputs.coa[group]['statement'] == 'PL':
+            inputs.audit.issue('nonmonetary_historical_carrying', refs, carrying, 'GBP', 'flagged',
+                'Non-monetary/historical transaction balance retained in functional GBP; '
+                'foreign transaction currency does not trigger policy-3 monetary remeasurement.', at=row['_ref'])
+            continue
+        if group not in monetary:
+            raise InputError(f'{row["_ref"]}: monetary classification requires review for {group}')
+        if not row['txn_amount']:
+            raise InputError(f'{row["_ref"]}: missing monetary transaction amount')
         try:
             translated, rate_refs = fx.convert(decimal(row['txn_amount']), currency, 'GBP', 'closing')
             delta = translated - carrying
