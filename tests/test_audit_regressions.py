@@ -223,3 +223,9 @@ def test_persistent_directory_lock_invalidates_existing_financial_results(bundle
         run(bundle, out)
     assert read_json(out / 'validation.json')['status'] == 'failed'
     assert all(v is None for v in read_json(out / 'control_figures_sd.json').values())
+
+
+def test_equivalent_iso_date_format_does_not_bypass_duplicate_detection(bundle, tmp_path):
+    journals(bundle, lambda batch: batch['entries'][18].update(date='20241231'))
+    controls = run(bundle, tmp_path / 'out')
+    assert controls['journals'] == {'posted': 13, 'rejected': 2, 'held_for_review': 5}

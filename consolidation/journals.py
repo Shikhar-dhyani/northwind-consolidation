@@ -45,7 +45,7 @@ def apply_journals(inputs, postings):
         net_lines = {}
         for account, debit, credit in local_fingerprint:
             net_lines[account] = net_lines.get(account, ZERO) + debit - credit
-        fingerprint = (entity, entry['date'], tuple(sorted(
+        fingerprint = (entity, when, tuple(sorted(
             (account, value) for account, value in net_lines.items() if value)))
         if status == 'posted' and fingerprint in fingerprints:
             status = 'held_for_review'
