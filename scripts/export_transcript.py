@@ -91,6 +91,43 @@ def redact(value):
     return value
 
 
+def private_sidebar_labels(value):
+    """Identify unrelated chat/project labels only in a Claude sidebar snapshot."""
+    labels = set()
+    if isinstance(value, dict):
+        for item in value.values():
+            labels.update(private_sidebar_labels(item))
+    elif isinstance(value, list):
+        for item in value:
+            labels.update(private_sidebar_labels(item))
+    elif isinstance(value, str):
+        try:
+            decoded = json.loads(value)
+        except ValueError:
+            # Tool results can contain escaped trees inside JSON text blocks.
+            text = value.replace('\\n', '\n').replace('\\t', '\t')
+            target = re.search(r'document (.+?) - Claude Value:', text)
+            sidebar = re.search(r'complementary Sidebar\n(.*?)\n\s*\d+ main\n', text, re.S)
+            if target and sidebar:
+                labels.update(re.findall(r'button More options for (.+?) ID:', sidebar[1]))
+                labels.discard(target[1])
+        else:
+            labels.update(private_sidebar_labels(decoded))
+    return labels
+
+
+def redact_sidebar_labels(value, labels):
+    if isinstance(value, str):
+        for label in sorted(labels, key=len, reverse=True):
+            value = value.replace(label, '[REDACTED PRIVATE SIDEBAR LABEL]')
+        return value
+    if isinstance(value, list):
+        return [redact_sidebar_labels(item, labels) for item in value]
+    if isinstance(value, dict):
+        return {key: redact_sidebar_labels(item, labels) for key, item in value.items()}
+    return value
+
+
 def capture_planning(records, folder):
     """Preserve the candidate-supplied Claude conversation, without inferred roles."""
     for record in records:
@@ -115,15 +152,26 @@ def capture_planning(records, folder):
                 if path.exists() and path.read_bytes() != raw:
                     raise ValueError('Existing Claude transcript differs; preserve it before adding another version')
                 path.write_bytes(raw)
-                registry = {'sessions': [{
+                registry_path = folder / 'SESSIONS.json'
+                registry = json.loads(registry_path.read_text(encoding='utf-8')) if registry_path.exists() else {'sessions': []}
+                supplied_record = {
                     'id': 'claude-planning', 'path': path.name,
                     'sha256': hashlib.sha256(raw).hexdigest(),
                     'provenance': 'Original conversation text supplied by the candidate in this chat',
                     'received_timestamp': record.get('timestamp'),
                     'format': 'Verbatim pasted text; speaker labels, original attachments and native tool records were not separately supplied',
                     'completeness': 'Candidate-provided record; not independently verified against Claude',
-                }]}
-                (folder / 'SESSIONS.json').write_text(json.dumps(registry, indent=2) + '\n', encoding='utf-8')
+                }
+                matches = [session for session in registry['sessions'] if session.get('path') == path.name]
+                if len(matches) > 1:
+                    raise ValueError('Duplicate Claude planning registry entries')
+                if matches:
+                    if matches[0].get('sha256') != supplied_record['sha256']:
+                        raise ValueError('Claude planning registry checksum differs from supplied text')
+                    # Keep reviewed scope, native-export coverage and related-file metadata.
+                else:
+                    registry['sessions'].append(supplied_record)
+                registry_path.write_text(json.dumps(registry, indent=2) + '\n', encoding='utf-8')
 
 
 def export(source: Path, target: Path):
@@ -133,6 +181,16 @@ def export(source: Path, target: Path):
     capture_planning(records, target.parent)
     active, completed_turns = False, 0
     discovery_calls = set()
+    ui_calls = {record['payload'].get('call_id') for record in records
+        if record.get('type') == 'response_item'
+        and record.get('payload', {}).get('type') in ('custom_tool_call', 'function_call')
+        and 'tools.mcp__node_repl__js' in record['payload'].get('input', '')
+        and 'sky.' in record['payload'].get('input', '')}
+    private_labels = set()
+    for record in records:
+        item = record.get('payload', {})
+        if item.get('call_id') in ui_calls and item.get('type') in ('custom_tool_call_output', 'function_call_output'):
+            private_labels.update(private_sidebar_labels(item.get('output')))
     for record in records:
         if record.get('type') == 'event_msg':
             kind = record['payload'].get('type')
@@ -157,6 +215,8 @@ def export(source: Path, target: Path):
         payload = {k: v for k, v in item.items() if k != 'internal_chat_message_metadata_passthrough'}
         if item.get('type') in ('custom_tool_call_output', 'function_call_output') and item.get('call_id') in discovery_calls:
             payload = {**payload, 'output': redact_discovery(payload.get('output'))}
+        if item.get('type') in ('custom_tool_call_output', 'function_call_output') and item.get('call_id') in ui_calls:
+            payload = {**payload, 'output': redact_sidebar_labels(payload.get('output'), private_labels)}
         included.append(redact({'timestamp': record.get('timestamp'), 'type': 'response_item', 'payload': payload}))
     target.write_text(''.join(json.dumps(r, ensure_ascii=False) + '\n' for r in included), encoding='utf-8')
     registry_path = target.parent / 'SESSIONS.json'
@@ -167,7 +227,8 @@ def export(source: Path, target: Path):
               'completed_turns': completed_turns, 'active_turn_included_through_snapshot': active,
               'earlier_planning_sessions_available': prior,
               'redactions': ['personal home path', 'candidate name', 'email addresses', 'recognized API keys',
-                             'private chat titles and summaries returned by discovery'],
+                             'private chat titles and summaries returned by discovery',
+                             'unrelated chat/project labels in Claude sidebar results'],
               'excluded_internal_record_counts': dict(excluded),
               'note': 'Visible messages and tool calls/results in original order, including mistakes. '
                       'Completion is detected from session events. An active turn is captured through the snapshot '

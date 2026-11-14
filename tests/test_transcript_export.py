@@ -45,6 +45,48 @@ def test_pasted_claude_record_is_preserved_verbatim(tmp_path):
     assert status['earlier_planning_sessions_available']
 
 
+def test_refresh_keeps_reviewed_claude_session_coverage(tmp_path):
+    source, target = tmp_path / 'session.jsonl', tmp_path / 'export/transcript.jsonl'
+    answer = 'claude , and here is the orignal conversation :-\nOriginal text.'
+    text = '<send_user_message_question_reply>' + json.dumps([{'answer': answer}]) + '</send_user_message_question_reply>'
+    source.write_text(json.dumps({'type': 'response_item', 'payload': {'type': 'message',
+        'role': 'user', 'content': [{'text': text}]}}) + '\n')
+    export(source, target)
+    registry_path = target.parent / 'SESSIONS.json'
+    registry = json.loads(registry_path.read_text())
+    registry['sessions'][0].update(id='claude-assignment-explanation',
+        completeness='Partial pieces of one continuous session',
+        related_paths=['claude-review-pasted-excerpts.jsonl'],
+        native_export={'available': False, 'reason': 'No task export option observed'})
+    registry_path.write_text(json.dumps(registry))
+    export(source, target)
+    assert json.loads(registry_path.read_text()) == registry
+
+
+def test_claude_sidebar_privacy_is_scoped_to_ui_results(tmp_path):
+    source, target = tmp_path / 'session.jsonl', tmp_path / 'export/transcript.jsonl'
+    tree = ('15 document Assignment explanation - Claude Value: https://example.test\n'
+            '28 complementary Sidebar\n'
+            '53 button More options for Private project ID: first\n'
+            '85 button More options for Assignment explanation ID: second\n'
+            '183 main\n188 heading Assignment explanation\n207 text An AI mistake')
+    rows = [
+        {'type': 'response_item', 'payload': {'type': 'custom_tool_call', 'call_id': 'ui',
+            'input': 'tools.mcp__node_repl__js({code: "await sky.get_window_state({});"})'}},
+        {'type': 'response_item', 'payload': {'type': 'custom_tool_call_output', 'call_id': 'ui',
+            'output': json.dumps({'content': [{'type': 'text', 'text': tree}]})}},
+        {'type': 'response_item', 'payload': {'type': 'message', 'role': 'assistant',
+            'content': 'Private project is quoted in this actual conversation.'}},
+    ]
+    source.write_text(''.join(json.dumps(row) + '\n' for row in rows))
+    export(source, target)
+    result = [json.loads(line)['payload'] for line in target.read_text().splitlines()]
+    assert 'Private project' not in result[1]['output']
+    assert 'Assignment explanation' in result[1]['output']
+    assert 'An AI mistake' in result[1]['output']
+    assert 'Private project' in result[2]['content']
+
+
 def test_private_discovery_metadata_is_redacted_at_multiple_json_depths():
     raw = json.dumps({'threads': [{'id': 'preserved', 'kind': 'codex', 'title': 'Private title',
         'summary': 'Private work with "quoted", text and trailing \\'}]})
