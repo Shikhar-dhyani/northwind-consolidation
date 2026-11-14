@@ -65,3 +65,15 @@ def test_publication_refuses_to_clear_unrelated_directory(bundle, tmp_path):
     with pytest.raises(InputError, match='not a recognized'):
         run(bundle, out)
     assert note.read_text() == 'keep'
+
+
+def test_sgd_control_sums_equivalent_split_rows(bundle, tmp_path):
+    add_sgd_rate(bundle)
+    def split(rows):
+        rows[1].update(txn_amount='20000.00', balance='11505.00')
+        rows.append(dict(rows[1]))
+    mutate_csv(bundle / 'tb_uk.csv', split)
+    controls = run(bundle, tmp_path / 'out')
+    assert abs(controls['sgd_bank_gbp'] - D('40000') / D('1.7')) < D('1e-20')
+    alternative = read_json(tmp_path / 'out/scenarios/alternative_disclosed_assumptions.json')
+    assert alternative['sgd_bank_reporting_amount'] == D('23529.41')

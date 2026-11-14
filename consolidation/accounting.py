@@ -27,8 +27,8 @@ def retranslate_uk(inputs, fx, postings):
             inputs.audit.issue('monetary_retranslation', refs, delta, 'GBP', 'flagged',
                                f'{currency} monetary balance retranslated at closing; counterpart to 7300.',
                                at=row['_ref'])
-            if currency == 'SGD':
-                bank_value = translated
+            if currency == 'SGD' and group == '1100':
+                bank_value = (bank_value if bank_value is not None else ZERO) + translated
         except MissingRate as exc:
             delta = None
             reasons = (str(exc),)
