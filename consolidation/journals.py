@@ -42,7 +42,11 @@ def apply_journals(inputs, postings):
         when = date.fromisoformat(entry['date'])
         if not date(2024, 1, 1) <= when <= date(2024, 12, 31):
             status, reason = 'rejected', 'Dated outside FY2024; no backdating.'
-        fingerprint = (entity, entry['date'], tuple(sorted(local_fingerprint)))
+        net_lines = {}
+        for account, debit, credit in local_fingerprint:
+            net_lines[account] = net_lines.get(account, ZERO) + debit - credit
+        fingerprint = (entity, entry['date'], tuple(sorted(
+            (account, value) for account, value in net_lines.items() if value)))
         if status == 'posted' and fingerprint in fingerprints:
             status = 'held_for_review'
             reason = f'Identical economic lines/date to {fingerprints[fingerprint]}; possible duplicate.'

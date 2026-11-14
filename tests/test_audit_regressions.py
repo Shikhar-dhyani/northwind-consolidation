@@ -89,3 +89,15 @@ def test_split_accrual_reversal_is_still_held(bundle, tmp_path):
     assert controls['journals'] == {'posted': 13, 'rejected': 2, 'held_for_review': 5}
     decisions = read_json(tmp_path / 'out/journal_decisions.json')
     assert next(d for d in decisions if d['id'] == 'JE-009')['status'] == 'held_for_review'
+
+
+def test_split_audit_fee_remains_a_duplicate_candidate(bundle, tmp_path):
+    def split(batch):
+        entry = batch['entries'][18]
+        debit = dict(entry['lines'][0], debit='24000.00')
+        entry['lines'] = [debit, dict(debit), entry['lines'][1]]
+    journals(bundle, split)
+    controls = run(bundle, tmp_path / 'out')
+    assert controls['journals'] == {'posted': 13, 'rejected': 2, 'held_for_review': 5}
+    decisions = read_json(tmp_path / 'out/journal_decisions.json')
+    assert next(d for d in decisions if d['id'] == 'JE-019')['status'] == 'held_for_review'
