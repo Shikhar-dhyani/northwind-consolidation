@@ -135,3 +135,19 @@ def test_invoice_matching_ignores_equivalent_decimal_format(bundle, tmp_path):
     controls = run(bundle, tmp_path / 'out')
     assert controls['group_revenue'].quantize(D('.01')) == D('28301607.81')
     assert abs(controls['intercompany_difference']['balance_residual_after_resolution']) < D('1e-24')
+
+
+def test_missing_subledger_rows_are_reported_as_missing_evidence(bundle, tmp_path):
+    mutate_csv(bundle / 'subledger_controls.csv',
+        lambda rows: rows.__setitem__(slice(None), [r for r in rows if r['entity_id'] != 'UK']))
+    run(bundle, tmp_path / 'out')
+    missing = [i for i in read_json(tmp_path / 'out/issues.json') if i['code'] == 'subledger_missing_evidence']
+    assert len(missing) == 2
+    assert {i['amount_affected'] for i in missing} == {1985000, 1210000}
+    assert all(i['file'] == 'data/subledger_controls.csv' for i in missing)
+
+
+def test_duplicate_subledger_control_cannot_be_counted_twice(bundle, tmp_path):
+    mutate_csv(bundle / 'subledger_controls.csv', lambda rows: rows.append(dict(rows[0])))
+    with pytest.raises(InputError, match='duplicate subledger control'):
+        run(bundle, tmp_path / 'out')

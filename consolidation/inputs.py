@@ -155,13 +155,18 @@ class Inputs:
         return postings
 
     def subledger_controls(self, postings):
+        ledgers = {'Accounts receivable (trade)': '1200', 'Accounts payable (trade)': '2100'}
+        seen = set()
         for row in self.csv('subledger_controls.csv'):
-            ledgers = {'Accounts receivable (trade)': '1200', 'Accounts payable (trade)': '2100'}
             if (row['entity_id'] not in self.entities or row['ledger'] not in ledgers
                     or row['as_of'] != '2024-12-31'
                     or row['currency'] != self.entities[row['entity_id']]['functional_currency']):
                 raise InputError(f'{row["_ref"]}: unsupported subledger scope/date/currency')
             account = ledgers[row['ledger']]
+            key = (row['entity_id'], account)
+            if key in seen:
+                raise InputError(f'{row["_ref"]}: duplicate subledger control')
+            seen.add(key)
             selected = [p for p in postings if p.entity == row['entity_id'] and p.account == account]
             tb = abs(sum((p.amount for p in selected), ZERO))
             difference = tb - decimal(row['control_total'])
@@ -172,3 +177,15 @@ class Inputs:
                                  at=row['_ref'])
             else:
                 self.audit.check(f'{row["entity_id"]} {account} subledger agrees', True, refs)
+        for entity, metadata in self.entities.items():
+            for ledger, account in ledgers.items():
+                if (entity, account) in seen:
+                    continue
+                selected = [p for p in postings if p.entity == entity and p.account == account]
+                refs = sources(('data/subledger_controls.csv:1',), *(p.refs for p in selected))
+                amount = abs(sum((p.amount for p in selected), ZERO))
+                self.audit.issue('subledger_missing_evidence', refs, amount,
+                    metadata['functional_currency'], 'flagged',
+                    f'{entity} {ledger}: missing sub-ledger total; reconciliation was not performed. '
+                    'Amount affected is the TB carrying balance, not an estimated discrepancy.',
+                    at='data/subledger_controls.csv:1')
