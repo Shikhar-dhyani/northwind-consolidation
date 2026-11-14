@@ -176,3 +176,21 @@ def test_unbacked_manual_ic_expense_is_not_swept_into_elimination(bundle, tmp_pa
     journals(bundle, lambda batch: batch['entries'][6]['lines'][0].update(account='8210'))
     with pytest.raises(InputError, match='UK 6300 IC invoice coverage'):
         run(bundle, tmp_path / 'out')
+
+
+@pytest.mark.parametrize('entity', ['US', 'UK'])
+def test_repeated_capital_rows_preserve_bridge_and_translate_historical_base_once(bundle, tmp_path, entity):
+    def split(rows):
+        code_field, code, amount_field = ('account_code', '3100', 'credit') if entity == 'US' else ('nominal_code', '3000', 'balance')
+        row = next(r for r in rows if r[code_field] == code)
+        row[amount_field] = str(D(row[amount_field]) / 2)
+        rows.append(dict(row))
+    mutate_csv(bundle / f'tb_{entity.lower()}.csv', split)
+    run(bundle, tmp_path / 'out')
+    scenario = read_json(tmp_path / 'out/scenarios/alternative_disclosed_assumptions.json')
+    assert scenario['opening_equity_bridge']['agrees_after_rounding']
+    assert scenario['controls']['group_profit'] == D('2814702.81')
+    assert scenario['controls']['total_equity'] == D('18389975.22')
+    with (tmp_path / 'out/ledger_postings.csv').open(newline='') as stream:
+        capital = [p for p in csv.DictReader(stream) if p['entity'] == 'US' and p['account'] == '3100']
+    assert sum((D(p['signed_gbp']) for p in capital), D(0)) == -1250000

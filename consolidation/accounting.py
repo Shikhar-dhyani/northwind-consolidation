@@ -140,6 +140,8 @@ def prior_equity(inputs):
 
 def translate(inputs, fx, local, opening):
     translated = []
+    parent_capital = [p for p in local if p.entity == 'US' and p.account == '3100']
+    capital_translated = False
     for p in local:
         kind = 'h2_average' if p.entity == 'IN' else 'average'
         statement = inputs.coa[p.account]
@@ -147,8 +149,10 @@ def translate(inputs, fx, local, opening):
             kind = 'closing'
         elif statement['account_type'] == 'Equity':
             if p.entity == 'US' and p.account == '3100':
-                translated.append(replace(p, amount=-opening['3100'][0], currency='GBP',
-                                          refs=sources(p.refs, opening['3100'][1]), stage='translation'))
+                if not capital_translated:
+                    translated.append(replace(p, amount=-opening['3100'][0], currency='GBP',
+                        refs=sources(*(row.refs for row in parent_capital), opening['3100'][1]), stage='translation'))
+                    capital_translated = True
                 continue
             if p.entity == 'US':
                 # Group opening reserves are authoritative; parent opening reserves
