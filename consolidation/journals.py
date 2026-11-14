@@ -52,11 +52,14 @@ def apply_journals(inputs, postings):
             status, reason = 'held_for_review', 'Equity adjustment requires a reviewed historical-rate and group-equity movement schedule.'
         if status == 'posted':
             # A reversal beyond the available liability needs its underlying accrual.
+            movements = {}
             for p in mapped:
-                if p.account == '2200' and p.amount > 0:
+                movements[p.account] = movements.get(p.account, ZERO) + p.amount
+            for account, movement in movements.items():
+                if account == '2200' and movement > 0:
                     available = sum((x.amount for x in postings
                                      if x.entity == entity and x.account == '2200'), ZERO)
-                    if available + p.amount > 0:
+                    if available + movement > 0:
                         status, reason = 'held_for_review', 'Reversal exceeds booked accruals; obtain accrual schedule.'
         evidence = ()
         if status == 'posted' and entity == 'IN':

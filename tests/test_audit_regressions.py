@@ -77,3 +77,15 @@ def test_sgd_control_sums_equivalent_split_rows(bundle, tmp_path):
     assert abs(controls['sgd_bank_gbp'] - D('40000') / D('1.7')) < D('1e-20')
     alternative = read_json(tmp_path / 'out/scenarios/alternative_disclosed_assumptions.json')
     assert alternative['sgd_bank_reporting_amount'] == D('23529.41')
+
+
+def test_split_accrual_reversal_is_still_held(bundle, tmp_path):
+    def split(batch):
+        entry = batch['entries'][8]
+        debit = dict(entry['lines'][0], debit='32000.00')
+        entry['lines'] = [debit, dict(debit), entry['lines'][1]]
+    journals(bundle, split)
+    controls = run(bundle, tmp_path / 'out')
+    assert controls['journals'] == {'posted': 13, 'rejected': 2, 'held_for_review': 5}
+    decisions = read_json(tmp_path / 'out/journal_decisions.json')
+    assert next(d for d in decisions if d['id'] == 'JE-009')['status'] == 'held_for_review'
