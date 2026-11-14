@@ -194,3 +194,32 @@ def test_repeated_capital_rows_preserve_bridge_and_translate_historical_base_onc
     with (tmp_path / 'out/ledger_postings.csv').open(newline='') as stream:
         capital = [p for p in csv.DictReader(stream) if p['entity'] == 'US' and p['account'] == '3100']
     assert sum((D(p['signed_gbp']) for p in capital), D(0)) == -1250000
+
+
+def test_transient_directory_rename_lock_is_retried(bundle, tmp_path):
+    original = Path.rename
+    denied = 0
+    def temporarily_locked(path, target):
+        nonlocal denied
+        if path.name == 'results' and denied < 2:
+            denied += 1
+            raise PermissionError('simulated transient scanner lock')
+        return original(path, target)
+    with patch.object(Path, 'rename', temporarily_locked), patch('consolidation.publication.time.sleep'):
+        run(bundle, tmp_path / 'out')
+    assert denied == 2
+    assert read_json(tmp_path / 'out/validation.json')['status'] == 'checks_passed_with_disclosed_blockers'
+
+
+def test_persistent_directory_lock_invalidates_existing_financial_results(bundle, tmp_path):
+    out = tmp_path / 'out'
+    run(bundle, out)
+    original = Path.rename
+    def locked(path, target):
+        if path.name in ('results', 'failure'):
+            raise PermissionError('simulated persistent directory lock')
+        return original(path, target)
+    with patch.object(Path, 'rename', locked), patch('consolidation.publication.time.sleep'), pytest.raises(InputError):
+        run(bundle, out)
+    assert read_json(out / 'validation.json')['status'] == 'failed'
+    assert all(v is None for v in read_json(out / 'control_figures_sd.json').values())

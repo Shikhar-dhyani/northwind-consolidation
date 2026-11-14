@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import shutil
+import time
 from tempfile import TemporaryDirectory
 
 from .model import InputError
@@ -15,6 +16,18 @@ def check_destination(out):
         raise InputError('Nonempty output is not a recognized generated consolidation directory')
 
 
+def rename(source, target):
+    # Windows indexers/virus scanners can temporarily deny directory renames.
+    for attempt in range(5):
+        try:
+            source.rename(target)
+            return
+        except PermissionError:
+            if attempt == 4:
+                raise
+            time.sleep(.05 * 2 ** attempt)
+
+
 def publish(staged: Path, out: Path, workspace: Path):
     # These exact resolved targets are siblings under the explicitly selected
     # output parent. The backup is owned by this temporary publication workspace.
@@ -22,12 +35,12 @@ def publish(staged: Path, out: Path, workspace: Path):
     if workspace.resolve().parent != out.parent.resolve() or staged.resolve().parent != workspace.resolve():
         raise InputError('Publication paths escaped their output workspace')
     if out.exists():
-        out.rename(backup)
+        rename(out, backup)
     try:
-        staged.rename(out)
+        rename(staged, out)
     except Exception:
         if backup.exists() and not out.exists():
-            backup.rename(out)
+            rename(backup, out)
         raise
 
 
@@ -50,5 +63,10 @@ def execute(data, out, audit, calculate, fail):
             failed = workspace / 'failure'
             failed.mkdir()
             fail(failed, audit, exc)
-            publish(failed, out, workspace)
+            try:
+                publish(failed, out, workspace)
+            except OSError as publication_error:
+                # A persistent directory lock must not leave old figures labelled
+                # valid if individual result files can still be overwritten.
+                fail(out, audit, publication_error)
             raise InputError(str(exc), getattr(exc, 'refs', ())) from exc
