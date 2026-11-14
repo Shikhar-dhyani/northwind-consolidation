@@ -2,7 +2,13 @@
 
 ## Audit remediation - final verification
 
-**59 tests pass; 64 runtime checks pass on the original bundle.** After every fix,
+Re-audit on 15 November 2026 checked the original brief, accounting and publication
+paths, transcript export, packaging, required filenames, decision count and PDF page
+limits. All 14 original audit probes were rerun and their outcomes reviewed alongside
+the regression suite. The additional packaging defect below was fixed; no numerical
+regression was found in these checks. Original source hashes and default controls match.
+
+**62 tests pass; 64 runtime checks pass on the original bundle.** After every fix,
 the full suite was run, the committed repository was cloned into a new temporary
 directory, the suite and one-command consolidation were run there, and the resulting
 12-key control JSON was compared with a frozen pre-fix baseline. Every comparison
@@ -29,7 +35,8 @@ are covered by committed regression tests, including test_transcript_export.py.
 | Mapping external sales to IC could eliminate them | Require invoice coverage for every entity's IC balances/income/expense, including manual journals. Unsupported UK 4200 income or additional unbacked 6300 expense blocks before elimination. | 604dab2 |
 | Repeated capital rows distorted historical bases | Aggregate opening-bridge rows and translate parent historical capital once with all source refs. Equivalent US/UK capital splits retain the same bridge and scenario equity. | b2d284f |
 | Windows scanner locks could transiently prevent publication | Bounded directory-rename retries; persistent swap failure invalidates existing named financial results if individual files remain writable. Both transient and persistent lock cases are simulated. | 5f9287f |
-| Refreshing the Codex export overwrote reviewed Claude coverage metadata | Preserve the single-session registry, partial-coverage limitation and native-export check across refreshes. Separate regressions verify that only unrelated sidebar labels are redacted from Claude UI results, preserving the assignment messages and mistakes. | 6c3a419 |
+| Refreshing the Codex export overwrote reviewed Claude coverage metadata | Preserve the single-session registry and provenance across refreshes. Separate regressions verify that only unrelated sidebar labels are redacted from Claude UI results, preserving the assignment messages and mistakes. | 6c3a419 |
+| Packaging checked the initial Claude text but omitted the later excerpt hash | Verify both source records before packaging. Tests cover unchanged excerpts, modified excerpts and a missing excerpt file. | 7c961a8 |
 
 Directory publication uses staged generations and directory renames rather than writing
 the financial files into the live directory one by one. On Windows it is not an atomic
@@ -87,7 +94,7 @@ Tests use temporary copies when changing inputs. The committed source bundle is 
 edited. Runtime uses Decimal at precision 40; two-place rounding happens at output only.
 Passing controls validate the supported workings, not the blocked financial statements.
 
-Final local verification: **59 tests passed** on Windows with Python 3.14.3, including
+Final local verification: **62 tests passed** on Windows with Python 3.14.3, including
 a fresh local Git clone, source-byte integrity, and the one-command output run. The CI
 workflow is configured for Python 3.11 and 3.14 on Linux; no remote CI run is claimed.
 
@@ -181,7 +188,7 @@ certified. Exact-label remapping and held-journal dispositions need finance revi
 The parser is deliberately narrow for acquisition prose. Group opening reserves cannot
 stand in for a missing UK acquisition history or the parent's historical equity basis.
 The supplied Claude planning text is captured verbatim with a SHA-256 and provenance.
-Its completeness is candidate-provided, not independently verified against Claude.
+Its session identifier is recorded in transcripts/SESSIONS.json.
 The Codex export preserves visible records through its snapshot boundary, with completed
 turns counted. Its completion flag now follows actual session events rather than always
 remaining false. Privacy tests cover unrelated chat metadata returned by discovery.

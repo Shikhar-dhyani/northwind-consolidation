@@ -2,7 +2,7 @@
 
 ## Audit remediation to explain in the live session
 
-The final suite has 59 tests and the original run executes 64 runtime checks. Every
+The final suite has 62 tests and the original run executes 64 runtime checks. Every
 audit fix was checked through the full suite, a fresh committed clone and equality to
 the pre-fix default controls. Original default and conditional financial figures did not
 change. VALIDATION.md records the per-fix commits and regressions.

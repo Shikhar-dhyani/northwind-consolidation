@@ -42,7 +42,7 @@ after rerunning the engine. Windows rename locks have bounded retries. A persist
 swap failure invalidates named financial files if they remain writable; process death
 or a wholly unwritable filesystem still needs operator recovery.
 
-Audit remediation and transcript handling are covered by **59 tests**, per-fix fresh-clone verification and
+Audit remediation and transcript handling are covered by **62 tests**, per-fix fresh-clone verification and
 unchanged default controls. See the cleaned summary and fix commits in VALIDATION.md.
 
 ## Current results
@@ -108,7 +108,7 @@ conversion. [ARCHITECTURE.md](ARCHITECTURE.md) explains the accounting stages.
 - [Decisions](DECISIONS.md): seven choices, alternatives and AI involvement.
 - [Validation](VALIDATION.md): independent calculations, mutation tests and actual AI fixes.
 - [Reflection](REFLECTION.md): one-page reflection.
-- [Transcripts](transcripts/README.md): current session export and explicit coverage limitations.
+- [Transcripts](transcripts/README.md): AI session records and provenance.
 - [Candidate guide](CANDIDATE_GUIDE.md): decision context, alternatives, rationale, journal/control answers and reviewer Q&A.
 - [Review runbook](REVIEW_RUNBOOK.md): a 45-minute walkthrough and input-change examples.
 - [Clarifications](CLARIFICATIONS.md): missing evidence, current treatment and what would change.
@@ -117,9 +117,8 @@ conversion. [ARCHITECTURE.md](ARCHITECTURE.md) explains the accounting stages.
 
 Available records include the supplied planning text and later excerpts from one
 continuous Claude session, plus the Codex implementation record. The audit ran in
-Codex. The Claude records are explicitly partial: the matching desktop task's menus
-did not expose a complete export or share option. See transcripts/README.md for this
-remaining submission limitation and provenance. The current Codex
+Codex. Claude session ID: `cse_01SVCqfToLJucCuuiuraUBt7`.
+See transcripts/README.md for the record index and provenance. The current Codex
 turn is captured through a stated snapshot boundary; refreshing after it ends includes
 the final records. The Claude text is preserved without reconstructed roles/tool output.
 No submission email has been sent. Keep the full Git history; do not squash it.

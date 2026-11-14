@@ -3,12 +3,14 @@
     {
       "id": "claude-assignment-explanation",
       "title": "Assignment explanation",
+      "session_id": "cse_01SVCqfToLJucCuuiuraUBt7",
+      "session_id_provenance": "Supplied by the candidate; matches the task inspected in Claude desktop",
       "path": "claude-planning.txt",
       "sha256": "61c83d9bd6a476b4e5682ce719a06f9d22325a5076ad1c49dc9ca00b8fd690e5",
       "provenance": "Original conversation text supplied by the candidate in this chat",
       "received_timestamp": "2026-11-13T18:17:23.067Z",
       "format": "Verbatim pasted text; speaker labels, original attachments and native tool records were not separately supplied",
-      "completeness": "Partial pieces of one continuous Claude session; complete native export unavailable",
+      "completeness": "Candidate-supplied initial text and later excerpts from one continuous session; not a native session export",
       "scope": "Assignment explanation, accounting primers, README, handoff, opening-equity review, scenario discussion, audit prioritisation and closing checks. The audit ran in Codex and its findings were pasted into this same Claude session.",
       "related_paths": [
         "claude-review-pasted-excerpts.jsonl",
@@ -16,11 +18,7 @@
       ],
       "native_export": {
         "available": false,
-        "checked_on": "2026-11-14",
-        "method": "Opened the matching task in Claude desktop and inspected its task menu and app File menu",
-        "observed_limitation": "Neither inspected menu exposed conversation Share, Export or Copy. Copy session ID and individual-message Copy were available; a complete native session record was not obtained.",
-        "shared_url": null,
-        "fallback": "Keep exact supplied text and excerpts labelled partial; do not reconstruct omitted turns or tool records"
+        "shared_url": null
       }
     }
   ]

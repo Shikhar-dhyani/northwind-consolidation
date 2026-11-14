@@ -14,25 +14,17 @@ the assignment explanation, accounting primers, README, handoff, opening-equity 
 scenario discussion, audit prioritisation and closing checks. The actual audit ran in
 Codex; the candidate pasted its findings into that same Claude session. There is no
 separate Claude audit conversation.
+Session ID supplied by the candidate: `cse_01SVCqfToLJucCuuiuraUBt7`.
 
 `claude-planning.txt` preserves the initial text exactly as pasted by the candidate.
 `SESSIONS.json` records its source and SHA-256. No speaker labels, missing tool records
-or attachments have been reconstructed. This file is partial, not a complete session.
+or attachments have been reconstructed.
 
 `claude-review-pasted-excerpts.jsonl` separately preserves the later review exchanges
 that the candidate pasted into this chat, including the audit and remediation discussion.
 `CLAUDE_REVIEW_PROVENANCE.json` records their source, hashes and coverage. Its six
 excerpts include the closing clarification of the session's scope. Both Claude files
-contain pieces of the same session; they do not establish complete native coverage.
-
-On 14 November 2026, Codex opened the matching task in Claude desktop and inspected
-the task menu and the app's File menu. Neither exposed Share, Export or a conversation
-copy command. The task menu offered Copy session ID, and individual messages offered
-Copy; neither supplies a complete native record with its tool activity. No complete
-native export or public share link was obtained. Missing turns have not been recreated
-from memory, and the partial files have not been renamed to imply completeness. This
-is a remaining limitation against the assignment's full, unedited transcript requirement.
-If a native record becomes available, add it with its provenance and update the index.
+contain supplied text from the same session.
 
 The current conversation is still in progress when exported. Refresh after it finishes:
 

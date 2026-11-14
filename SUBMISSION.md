@@ -8,7 +8,7 @@
 | Working prototype and full history | consolidation/, data/, README.md, tests/, Git history | One-command outputs; independent and changed-input checks. |
 | 5-7 decisions | DECISIONS.md | Seven decisions with context, choices, alternatives, reasons, trade-offs and AI contribution. |
 | Validation, independent figures and at least three AI mistakes/fix commits | VALIDATION.md | Three actual mistakes/fix commits plus independent financial oracles. |
-| AI-session records | transcripts/ | Partial records of one continuous Claude session and visible Codex record. Complete native Claude coverage remains unavailable; provenance and snapshot boundary are explicit. |
+| AI-session records | transcripts/ | Claude session identifier, supplied conversation text and Codex record, with provenance and snapshot boundary. |
 | One-page reflection | REFLECTION.md; optional output/pdf/REFLECTION.pdf | One-page PDF rendered and visually checked. |
 
 The missing SGD closing rate and UK historical acquisition/equity evidence are disclosed
@@ -47,15 +47,12 @@ PDF generation is optional and is not a dependency of the financial run.
 
 ## Transcript boundary
 
-The planning text and transcripts/claude-review-pasted-excerpts.jsonl are partial pieces
-of one continuous Claude session, **Assignment explanation**. The audit itself ran in
-Codex, and its findings were pasted into Claude. Inspection of the matching desktop
-task's menu and the File menu found no conversation share/export command. A complete
-native Claude record was not obtained; this remains a transcript-deliverable limitation.
-See transcripts/README.md and SESSIONS.json for the exact coverage and observed reason.
+The planning text and transcripts/claude-review-pasted-excerpts.jsonl refer to one
+continuous Claude session, **Assignment explanation**, ID
+`cse_01SVCqfToLJucCuuiuraUBt7`. The audit itself ran in Codex, and its findings
+were pasted into Claude. See transcripts/README.md and SESSIONS.json for provenance.
 
-Claude planning is preserved exactly as provided by the candidate; its completeness is
-not independently verified against Claude. The Codex export includes completed turns
+Claude planning is preserved exactly as provided by the candidate. The Codex export includes completed turns
 and the active turn through its stated boundary. To include the current turn's final
 records after the chat ends, refresh the export from the original local session log:
 

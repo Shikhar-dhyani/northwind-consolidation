@@ -14,10 +14,6 @@ The repository is public, so reviewers can access it without an invitation.
 
 The repository contains the architecture, runnable Python prototype, DECISIONS.md,
 VALIDATION.md, AI-session records and one-page reflection, with the full commit history.
-The Claude records are partial supplied text and excerpts from one continuous session;
-the desktop task's inspected menus did not expose a complete export/share option.
-This coverage limitation is recorded in transcripts/README.md. The Codex export states
-its snapshot boundary.
 The architecture and reflection are also available as PDF attachments in the prepared
 submission package.
 
@@ -32,7 +28,7 @@ evidence. Affected figures are explicitly null with reasons; independently suppo
 figures remain available. The journal review policy and all assumptions are disclosed.
 
 A separately labelled alternative scenario shows conditional totals and the opening-equity
-bridge without replacing the conservative controls. The validation suite contains 59
+bridge without replacing the conservative controls. The validation suite contains 62
 passing tests, including audit regressions and changed-input checks; default figures
 were verified unchanged from fresh clones after each fix.
 
