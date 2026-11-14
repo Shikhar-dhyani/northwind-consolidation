@@ -22,7 +22,7 @@ from consolidation.reporting import CONTROL_KEYS, rounded
 FINANCIAL_FILES = ('consolidated_tb.csv', 'balance_sheet.json', 'profit_and_loss.json',
     'changes_in_equity.json', 'eliminations.csv', 'issues.json', 'control_figures_sd.json',
     'control_explanations.json', 'journal_decisions.json', 'ledger_postings.csv',
-    'validation.json', 'input_manifest.json')
+    'validation.json', 'input_manifest.json', 'scenarios/alternative_disclosed_assumptions.json')
 
 
 def command(*args):

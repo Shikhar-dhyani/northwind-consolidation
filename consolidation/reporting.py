@@ -103,6 +103,7 @@ def build_reports(inputs, postings, opening, india, bank, counts, causes, ic_ref
 
 
 def write_json(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(rounded(value), indent=2, ensure_ascii=False, allow_nan=False) + '\n', encoding='utf-8')
 
 
@@ -148,6 +149,7 @@ def emit_failure(out, audit, error):
     """Replace all financial outputs on failure; never leave a previous good run."""
     out.mkdir(parents=True, exist_ok=True)
     reason = f'Input/control failure: {error}'
+    write_json(out / 'scenarios/alternative_disclosed_assumptions.json', {'status': 'blocked', 'reason': reason})
     refs = getattr(error, 'refs', ())
     if not refs:
         found = re.search(r'data/[\w.]+:\d+', str(error))

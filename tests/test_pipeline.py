@@ -117,7 +117,8 @@ def test_reproducible_outputs_and_source_references(tmp_path):
     first, second = tmp_path / 'first', tmp_path / 'second'
     run(DATA, first)
     run(DATA, second)
-    assert {p.name: p.read_bytes() for p in first.iterdir()} == {p.name: p.read_bytes() for p in second.iterdir()}
+    assert {str(p.relative_to(first)): p.read_bytes() for p in first.rglob('*') if p.is_file()} == {
+        str(p.relative_to(second)): p.read_bytes() for p in second.rglob('*') if p.is_file()}
     with (first / 'ledger_postings.csv').open(newline='') as stream:
         for posting in csv.DictReader(stream):
             refs = json.loads(posting['source_rows'])
@@ -142,6 +143,7 @@ def test_unbalanced_input_replaces_previous_outputs(bundle, tmp_path):
         run(bundle, out)
     assert all(v is None for v in read_json(out / 'control_figures_sd.json').values())
     assert read_json(out / 'validation.json')['status'] == 'failed'
+    assert read_json(out / 'scenarios/alternative_disclosed_assumptions.json')['status'] == 'blocked'
     fatal = read_json(out / 'issues.json')[-1]
     assert fatal['file'] == 'data/tb_us.csv'
     assert len((out / 'ledger_postings.csv').read_text().splitlines()) == 1

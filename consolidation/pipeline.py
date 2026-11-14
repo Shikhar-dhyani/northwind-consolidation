@@ -11,6 +11,7 @@ from .journals import apply_journals
 from .model import Audit, EPSILON, InputError, total
 from .periods import cut_india
 from .reporting import build_reports, emit, emit_failure
+from .scenarios import alternative
 
 
 def run(data: Path, out: Path):
@@ -41,6 +42,8 @@ def run(data: Path, out: Path):
                 abs(-total(translated, account='3400')['value'] - india['nci_closing']) < EPSILON,
                 india['sources'])
             reports, accounts = build_reports(inputs, translated, opening, india, bank, counts, causes, ic_refs)
+            reports['scenarios/alternative_disclosed_assumptions.json'] = alternative(
+                inputs, fx, opening, local, translated, india, bank, reports)
             emit(out, inputs, reports, accounts, translated, eliminations, journals)
             return reports['control_figures_sd.json']
     except (InputError, KeyError, ValueError, OSError) as exc:
