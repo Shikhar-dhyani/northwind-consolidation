@@ -1,5 +1,44 @@
 # Validation evidence
 
+## Disclosed scenario review update
+
+Latest suite: **31 tests pass**. Original inputs retain the same six default null controls.
+The separate alternative has two additional runtime checks (52 on the original bundle):
+an unrounded balance-sheet equation and an independently calculated equity roll-forward.
+
+The opening bridge is GBP 14,267,097.92615868028279654359780047132757 against
+GBP 14,267,097.93 reported opening equity. The difference is
+GBP -0.00384131971720345640219952867243, retained as an unrounded audit string rather
+than silently discarded. Under A1 the *net* historical adjustment is zero within source
+rounding. Gross allocations and goodwill are not identified by that equality.
+
+Under A1/A1.gross/A2, the alternative reports:
+
+| Figure | GBP | Dependencies |
+|---|---:|---|
+| Group profit | 2,814,702.81 | A2 |
+| Owners' profit | 2,744,660.38 | A2 |
+| Total equity | 18,389,975.22 | A1/A2 |
+| Total assets | 28,596,245.74 | A1/A1.gross/A2 |
+| Owners' translation reserve movement | 43,881.36 | A1 |
+
+The gross-scenario liabilities are GBP 10,206,270.51. Assets minus liabilities minus
+equity is zero before rounding; independently rounded displayed totals differ by GBP
+0.01, explicitly disclosed without a plug. The separate equity bridge uses parent
+opening net equity FX, parent profit closing-versus-average FX, India translation,
+goodwill translation and investment translation, plus acquisition NCI. The opening
+sub-penny difference is a separate source-rounding movement, not disguised as CTA.
+
+Tests supply closing SGD rates in copied inputs, including a rate reproducing the booked
+GBP 23,010. A2 disappears; scenario and default profit converge, and the profit/equity
+change is 40,000 / rate - 23,010 under the same A1. Default equity remains null because
+SGD FX does not establish historical A1. Changing opening reserves by GBP 100 blocks
+the alternative rather than generating a residual. Fatal runs also overwrite stale
+scenario output. Scenario fields and sources are deterministic across repeated runs.
+
+This section supersedes earlier test-count summaries below; those describe the earlier
+verification milestone. The default accounting interpretation is unchanged.
+
 Run `python -m pytest -q`, then `python -m consolidation --data data --out output`.
 Tests use temporary copies when changing inputs. The committed source bundle is never
 edited. Runtime uses Decimal at precision 40; two-place rounding happens at output only.

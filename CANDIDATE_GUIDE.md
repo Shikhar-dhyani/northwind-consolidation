@@ -1,5 +1,38 @@
 # Candidate decision and review walkthrough
 
+## Review refinement: conditional totals alongside conservative controls
+
+The required controls file still has the original six nulls. Its companion explanations
+and issues now show the conditional alternative amounts and reference
+`output/scenarios/alternative_disclosed_assumptions.json`. The scenario is not a second
+authoritative set of accounts and does not change the supplied input files.
+
+**A1:** TB equity is treated as opening equity, without unreported dividends, capital,
+reserve or in-year historical adjustment movements. The opening group reconciliation
+supports zero *net* historical adjustment within source rounding. It does not establish
+that goodwill alone is zero. **A1.gross:** gross assets additionally assume no offsetting
+historical asset/liability adjustments. Net equity does not require that allocation.
+**A2:** when closing SGD FX is missing, retain the bank's GBP 23,010 carrying amount
+without remeasurement; this is a reporting assumption, not a policy-3 closing valuation.
+
+Conditional results: group profit GBP 2,814,702.81; owners' profit GBP 2,744,660.38;
+equity GBP 18,389,975.22; assets GBP 28,596,245.74; owners' CTA movement GBP 43,881.36.
+Profit depends on A2, equity on A1/A2, gross assets on A1/A1.gross/A2, and CTA movement
+on A1. A2 changes cash and profit equally and therefore does not change translation OCI.
+Scenario balances are checked before rounding; displayed totals have a disclosed penny
+difference from independent rounding. No balancing plug is posted.
+
+**Suggested interview answer:** "These totals are calculable under disclosed assumptions,
+and the opening-equity reconciliation supports the historical one. I did not present
+them as facts because the inputs do not establish those assumptions. Gross assets need
+an additional allocation assumption that net equity does not need."
+
+**Input-change answer:** supplying an approved closing SGD rate removes A2 and changes
+profit by 40,000 / rate - 23,010. Default profit becomes numerical. Default equity still
+requires A1 evidence; the alternative equity becomes dependent on A1 alone. The tests
+compare the two paths under matching historical assumptions rather than silently
+promoting A1 into the default. Earlier answers below describe the conservative default.
+
 This guide explains the choices implemented in the project. The first-person answers
 are suggested wording for explaining those choices; they do not assert that you made
 them independently before working with AI. The assignment requires you to understand

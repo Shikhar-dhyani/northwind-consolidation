@@ -53,6 +53,13 @@ The India goodwill control is distinct from total group goodwill, which is block
 
 ## Outputs and interpretation
 
+The conservative required outputs are accompanied by
+`output/scenarios/alternative_disclosed_assumptions.json`. It shows the conditional
+opening-equity bridge, assumptions A1/A2 and the extra gross-allocation condition
+A1.gross, per-figure dependencies, alternative statements and balance/roll-forward
+checks. Default null reasons include the conditional value and scenario path.
+See the review updates in DECISIONS.md, VALIDATION.md and CANDIDATE_GUIDE.md.
+
 | File | Contents |
 |---|---|
 | `consolidated_tb.csv` | Group-account balances, status, reasons and source rows |

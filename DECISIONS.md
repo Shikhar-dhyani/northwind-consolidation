@@ -21,6 +21,22 @@ agent for the full product. No autonomous ledger authority was added.
 
 ## 2. Missing evidence propagates as unknown
 
+**Review refinement:** retain conservative controls as the default and publish a separate
+`output/scenarios/alternative_disclosed_assumptions.json`. The opening-equity bridge
+supports a zero *net* historical adjustment within source rounding under A1: TB equity
+represents opening balances, with no unreported capital/dividend/reserve or historical
+adjustment movements. It does not establish zero UK goodwill alone. A1.gross additionally
+assumes no offsetting historical gross asset/liability adjustments, and is needed only
+for gross totals. A2 carries SGD at GBP 23,010 without FX remeasurement when closing FX
+is missing; this is a reporting assumption, not a closing valuation under policy 3.
+Profit needs A2; equity needs A1/A2; assets need A1/A1.gross/A2; owners' translation
+movement needs A1 but not A2. Supplying SGD FX removes A2, not A1. Default null reasons
+now include the conditional value and the scenario path. No default control is replaced.
+
+**AI involvement in the refinement:** the candidate supplied the bridge and suggested
+reducing nulls, then qualified the inference after discussion. Codex retained the
+conservative default and implemented the explicitly labelled alternative and tests.
+
 **Context:** the bank holds SGD 40,000 at a GBP 23,010 carrying value, without a closing
 rate. UK acquisition workings are also absent. **Why this choice:** an unknown bank
 remeasurement changes both assets and FX profit. Keeping headline profit would imply
