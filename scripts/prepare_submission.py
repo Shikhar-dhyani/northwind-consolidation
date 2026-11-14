@@ -40,6 +40,21 @@ def original_bytes():
             raise RuntimeError(f'Original source bytes changed: {name}')
 
 
+def transcript_bytes(folder):
+    registry = json.loads((folder / 'SESSIONS.json').read_text(encoding='utf-8'))
+    records = list(registry['sessions'])
+    # The later excerpts have their own provenance record, in addition to the
+    # original planning text indexed by SESSIONS.json.
+    records.append(json.loads((folder / 'CLAUDE_REVIEW_PROVENANCE.json').read_text(encoding='utf-8')))
+    for record in records:
+        path = (folder / record['path']).resolve()
+        if not path.is_relative_to(folder.resolve()) or not path.is_file():
+            raise RuntimeError('Transcript file missing or outside transcript directory')
+        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+        if actual != record['sha256']:
+            raise RuntimeError(f'Transcript checksum mismatch: {record["path"]}')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--require-pdfs', action='store_true')
@@ -58,11 +73,7 @@ def main():
     coverage = json.loads((ROOT / 'transcripts/EXPORT_STATUS.json').read_text())
     if not coverage['earlier_planning_sessions_available']:
         raise RuntimeError('Earlier planning-session record is missing')
-    registry = json.loads((ROOT / 'transcripts/SESSIONS.json').read_text())
-    for session in registry['sessions']:
-        actual = hashlib.sha256((ROOT / 'transcripts' / session['path']).read_bytes()).hexdigest()
-        if actual != session['sha256']:
-            raise RuntimeError('Prior transcript checksum mismatch')
+    transcript_bytes(ROOT / 'transcripts')
     docs = []
     pdf_dir = ROOT / 'output/pdf'
     if (pdf_dir / 'pdf_manifest.json').exists():
