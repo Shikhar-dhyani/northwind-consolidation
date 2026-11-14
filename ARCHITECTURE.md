@@ -71,6 +71,8 @@ reversal exceeds available accruals; JE-016 has no mapping. India interest/depre
 entries are held because the monthly TB already contains those expense categories and
 no supporting schedule distinguishes a true-up from overlap. Different amounts do not
 prove duplication. This review policy is disclosed and makes the results conditional.
+Schema validation rejects malformed or empty journal structures. Reversal checks and
+duplicate fingerprints operate on net account movements, independent of line splits.
 
 India's April-December monthly detail must cover every PL ledger/month and reconcile
 exactly to the source TB. April-June profit moves into pre-acquisition reserves; only
@@ -89,6 +91,8 @@ well as cash. Presentation translation uses closing for assets/liabilities, FY a
 for US PL, H2 average for India PL and historical equity bases where supported. The
 supplied opening parent share capital is used directly in GBP. Group opening reserves
 cannot be treated as the parent's standalone historical retained earnings.
+Monetary status is explicit by group account: cash/receivables/payables differ from
+inventory/PPE/prepayments/deferred income despite broad shared Asset/Liability types.
 
 <div style="page-break-after: always;"></div>
 
@@ -102,6 +106,8 @@ and GBP 11,957.88 payable retranslation. Reconciled receivables/payables elimina
 full. Fee income and expense eliminate in full, with their GBP 1,966.21 conversion
 residual reclassified to a gain in 7300. This reclassification does not change total PL.
 The monetary payable retranslation is a separate loss, not that fee-conversion residual.
+Numeric invoice formats compare as Decimal. All entities' IC postings, including manual
+entries, require invoice coverage before any account is cleared through elimination.
 
 The acquisition note is parsed using a narrow, checked template. Changed ownership,
 completion date or fair-value wording stops for review. Consideration must reconcile
@@ -177,12 +183,14 @@ The product agent would propose, the finance reviewer would authorize a typed de
 and validation would decide whether the resulting run may progress. Review policies and
 the exact-label mapping correction are already explicit assumptions in this prototype.
 
-The implementation is intentionally bounded: synchronous local files, a few supported
-schemas, in-memory provenance and one acquisition-note template. It has no review UI,
-persistent decision store, policy language, period versioning, concurrent snapshot lock,
-or atomic multi-file publication. Financial files are rewritten on a caught failure; an
-OS-level interruption could leave a mixed folder and requires rerunning. Production
-publication needs immutable staged runs with an atomic ready pointer and access control.
+Financial files are written into a temporary generation, then published using directory
+renames. Caught errors publish failed outputs; unrelated directories are protected.
+Windows rename locks have bounded retries and a failure-file invalidation fallback.
+The directory may briefly be unavailable between renames. Process termination or an
+unwritable filesystem still requires recovery. PDFs survive successful runs; archives
+are rebuilt. There is no review UI, persistent decision store, policy language, concurrent
+input snapshot lock or atomically exchanged readiness pointer. Production needs immutable
+runs, an atomic ready pointer and access control.
 At scale, stream/partition ledger data and normalize provenance rather than repeating
 large source lists. The Claude planning conversation is preserved as supplied by the
 candidate; the Codex record includes completed turns and the active turn through its

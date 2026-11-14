@@ -30,4 +30,7 @@ Both known contributing conversations are represented: the candidate-supplied Cl
 planning text and this Codex implementation session. Failed attempts and test failures
 remain in the Codex record. Private titles and summaries of unrelated chats returned
 during discovery are redacted as personal data; tool calls/results remain in place.
+This filtering is now scoped to identified discovery tool results and exact private chat
+field values. Ordinary JSON title/summary fields in user messages, AI drafts and other
+tools are preserved. The refreshed export restores such material from the original log.
 If another AI session contributed, include its original record as well.

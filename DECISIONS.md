@@ -112,6 +112,12 @@ but the effects can be defended independently. **AI:** Codex proposed separate n
 postings and an independent NCI closing-net-assets oracle; adopted. No UK elimination
 plug was accepted.
 
+**Audit refinement:** all IC postings, including manual entries and every entity's IC
+income/expense accounts, must reconcile to invoice coverage before elimination. Currency
+remeasurement uses an explicit group-account monetary classification: broad `Asset`
+alone cannot distinguish cash from inventory. Non-monetary carrying values are retained
+in functional GBP; unsupported foreign-account classifications require review.
+
 ## 7. Contribution provenance and testable failure states
 
 **Context:** reviewers must trace a figure and predict a changed input before rerunning.
@@ -121,8 +127,12 @@ errors that a self-consistent but wrong implementation could otherwise miss.
 
 **Options:** source filenames only; a large expression-graph service; a local posting log
 with row/pointer/rate references. **Choice:** the local log plus input hashes and companion
-control explanations. A fatal run overwrites the named outputs with blocked results;
-mutations test this explicitly. **Trade-off:** verbose repeated source lists and no atomic
-publication or persistent override UI. **AI:** Codex initially chose an issue's first sorted
+control explanations. Complete financial generations are staged and then published by
+directory renames; caught calculation/schema failures publish blocked results. Bounded
+Windows-lock retries and failure-file invalidation cover tested publication errors.
+**Trade-off:** verbose repeated source lists, a brief Windows directory gap during swap,
+and no atomic readiness pointer or persistent override UI. **AI:** Codex initially chose an issue's first sorted
 source as its primary location and silently indexed duplicate metadata; review tests
 exposed both mistakes. Explicit primary locations and uniqueness checks replaced them.
+The later audit also exposed stale-output, split-journal, bank aggregation, FX and
+transcript defects; VALIDATION.md identifies each regression test and corrective commit.

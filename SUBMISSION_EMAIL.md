@@ -10,6 +10,8 @@ Please find my Northwind Group consolidation take-home submission for bundle NWG
 
 Repository: https://github.com/Shikhar-dhyani/northwind-consolidation
 
+The repository is public, so reviewers can access it without an invitation.
+
 The repository contains the architecture, runnable Python prototype, DECISIONS.md,
 VALIDATION.md, AI-session records and one-page reflection, with the full commit history.
 The architecture and reflection are also available as PDF attachments in the prepared
@@ -24,6 +26,11 @@ python -m consolidation --data data --out output
 The supplied bundle lacks closing SGD FX and UK acquisition/historical consolidation
 evidence. Affected figures are explicitly null with reasons; independently supported
 figures remain available. The journal review policy and all assumptions are disclosed.
+
+A separately labelled alternative scenario shows conditional totals and the opening-equity
+bridge without replacing the conservative controls. The validation suite contains 56
+passing tests, including audit regressions and changed-input checks; default figures
+were verified unchanged from fresh clones after each fix.
 
 I look forward to walking through the design, source traceability and input-change
 examples in the follow-up session.

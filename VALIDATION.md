@@ -1,9 +1,48 @@
 # Validation evidence
 
+## Audit remediation - final verification
+
+**56 tests pass; 64 runtime checks pass on the original bundle.** After every fix,
+the full suite was run, the committed repository was cloned into a new temporary
+directory, the suite and one-command consolidation were run there, and the resulting
+12-key control JSON was compared with a frozen pre-fix baseline. Every comparison
+matched. The original six conservative nulls and all numerical default figures remain
+unchanged; the alternative's original conditional amounts are unchanged too.
+
+The cleaned audit summary below is submission evidence. Raw audit reports, mutation
+outputs and per-fix clone helpers remain under ignored tmp/ and are not packaged.
+The original 14 audit probes were rerun after remediation; their corrected outcomes
+are covered by committed regression tests, including test_transcript_export.py.
+
+| Audit defect | Corrected behavior and regression evidence | Fix commit |
+|---|---|---|
+| Malformed journals left stale results; empty journals could post | Validate journal structure/amount types; stage complete output generations. Null/empty entry structures and an unexpected mid-write TypeError publish failed results with null controls and remove stale financial artifacts. Unrelated output directories are refused. | 07fedcc |
+| SGD scalar returned only the last row | Aggregate all SGD cash rows. Two equivalent SGD 20,000 rows at synthetic rate 1.7 produce the same GBP 23,529.41 control as one SGD 40,000 row. | 122aeaa |
+| Split reversal bypassed liability check | Check the journal's net movement per account. Two GBP 32,000 debits still hold JE-009 and do not create a debit accrual balance. | 3c84634 |
+| Split audit fee bypassed duplicate check | Fingerprint net local-account movements by entity/date. Two USD 24,000 debits in JE-019 still match JE-014 and remain held. | 4ab6c05 |
+| Scenario hard-coded GBP 23,010 | Derive carrying value from source SGD cash rows and use it in the amount and all disclosures. A changed GBP 24,010 book value is reported consistently. | a1ee2d2 |
+| Foreign non-monetary accounts were remeasured | Explicit group-account monetary classification. Inventory, prepayments, PPE and deferred income with foreign transaction metadata retain their recorded functional-GBP values. | 789b8cd |
+| Transcript redaction suppressed arbitrary summaries | Redact private title/summary values only in identified chat-discovery results; ordinary financial summaries and AI mistakes remain. Test both privacy and preservation, including nested JSON. | e786672 |
+| Equivalent invoice numeric strings disagreed | Compare document amounts as Decimal; 157460.0 and 157460.00 reconcile identically. | 152a578 |
+| Missing sub-ledgers silently removed checks | Report missing evidence per required entity/ledger and reject duplicate controls. Removing both UK rows produces two missing-evidence issues. | 042b014 |
+| Alternative dropped unknown FX outside A2 | Explicitly list unquantified dependencies and block alternative amounts when unknowns are not covered by A1/A1.gross/A2. Missing EUR FX is not silently treated as zero under the SGD assumption. | 7a49005 |
+| Mapping external sales to IC could eliminate them | Require invoice coverage for every entity's IC balances/income/expense, including manual journals. Unsupported UK 4200 income or additional unbacked 6300 expense blocks before elimination. | 604dab2 |
+| Repeated capital rows distorted historical bases | Aggregate opening-bridge rows and translate parent historical capital once with all source refs. Equivalent US/UK capital splits retain the same bridge and scenario equity. | b2d284f |
+| Windows scanner locks could transiently prevent publication | Bounded directory-rename retries; persistent swap failure invalidates existing named financial results if individual files remain writable. Both transient and persistent lock cases are simulated. | 5f9287f |
+
+Directory publication uses staged generations and directory renames rather than writing
+the financial files into the live directory one by one. On Windows it is not an atomic
+ready-pointer exchange: readers may briefly find the directory unavailable between
+renames. Process termination or an unwritable filesystem can still prevent publication;
+the program cannot guarantee a failure record when the OS denies all writes. These
+limits are distinct from the now-tested malformed-input and stale-success defects.
+
+No synthetic rate or mutated input from the regression tests is inserted into the original bundle.
+
 ## Disclosed scenario review update
 
-Latest suite: **31 tests pass**. Original inputs retain the same six default null controls.
-The separate alternative has two additional runtime checks (52 on the original bundle):
+Original inputs retain the same six default null controls.
+The separate alternative contributes two of the 64 runtime checks:
 an unrounded balance-sheet equation and an independently calculated equity roll-forward.
 
 The opening bridge is GBP 14,267,097.92615868028279654359780047132757 against
@@ -40,15 +79,14 @@ SGD FX does not establish historical A1. Changing opening reserves by GBP 100 bl
 the alternative rather than generating a residual. Fatal runs also overwrite stale
 scenario output. Scenario fields and sources are deterministic across repeated runs.
 
-This section supersedes earlier test-count summaries below; those describe the earlier
-verification milestone. The default accounting interpretation is unchanged.
+The default accounting interpretation is unchanged.
 
 Run `python -m pytest -q`, then `python -m consolidation --data data --out output`.
 Tests use temporary copies when changing inputs. The committed source bundle is never
 edited. Runtime uses Decimal at precision 40; two-place rounding happens at output only.
 Passing controls validate the supported workings, not the blocked financial statements.
 
-Latest local verification: **26 tests passed** on Windows with Python 3.14.3, including
+Final local verification: **56 tests passed** on Windows with Python 3.14.3, including
 a fresh local Git clone, source-byte integrity, and the one-command output run. The CI
 workflow is configured for Python 3.11 and 3.14 on Linux; no remote CI run is claimed.
 
@@ -70,7 +108,7 @@ workflow is configured for Python 3.11 and 3.14 on Linux; no remote CI run is cl
 - Repeated runs are byte-identical. Every posting source file/line and JSON pointer is
   resolved in tests. Original input bytes match ZIP-derived hashes, including line endings.
 
-There are 50 executed runtime controls for the original bundle. Neither a final balanced
+There are 64 executed runtime controls for the original bundle. Neither a final balanced
 group TB nor an assets/equity equation is claimed: unavailable values block those checks.
 The statement status, issues and explanations are part of the result, not incidental logs.
 

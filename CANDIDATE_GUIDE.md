@@ -1,5 +1,32 @@
 # Candidate decision and review walkthrough
 
+## Audit remediation to explain in the live session
+
+The final suite has 56 tests and the original run executes 64 runtime checks. Every
+audit fix was checked through the full suite, a fresh committed clone and equality to
+the pre-fix default controls. Original default and conditional financial figures did not
+change. VALIDATION.md records the per-fix commits and regressions.
+
+Useful input-change explanations:
+
+- Splitting JE-009 or JE-019 into equivalent lines changes neither reversal validation
+  nor duplicate classification, because both operate on net account movements.
+- Splitting SGD bank or capital balances into equivalent source rows preserves their
+  totals and historical bases. SGD carrying-value assumptions follow the actual TB.
+- A foreign transaction currency does not make inventory monetary. Group-account
+  classification controls remeasurement; non-monetary historical GBP amounts remain.
+- Missing sub-ledger rows mean missing evidence, not a passed reconciliation.
+- Amount strings that differ only in formatting compare numerically.
+- IC balances/income/expense must have invoice coverage; an external-sales mapping to
+  IC income cannot simply disappear through elimination.
+- The alternative explicitly lists unknown dependencies outside A1/A1.gross/A2 and
+  blocks those amounts. It never generalizes the SGD carrying-value assumption to EUR.
+- Malformed journal input or an unexpected calculation error replaces old financial
+  claims with failed results. Publication stages complete directory generations, with
+  Windows-lock retries; an atomic concurrent-reader readiness pointer is still future work.
+- Transcript privacy filtering is scoped to identified discovery results. Ordinary
+  summaries and draft mistakes are retained, including the audit's failed attempts.
+
 ## Review refinement: conditional totals alongside conservative controls
 
 The required controls file still has the original six nulls. Its companion explanations
@@ -199,7 +226,7 @@ for the new result."
 
 **Alternatives:** totals without lineage; an expression-graph service; a small local
 posting log. **Trade-off:** repeated source lists are verbose and not suitable for large
-groups. Atomic publication and a persistent review store are future work, not implemented
+groups. Atomic readiness-pointer publication and a persistent review store are future work, not implemented
 features. **AI contribution:** AI wrote both code and draft tests; review exposed real
 mistakes documented with fix commits in VALIDATION.md.
 

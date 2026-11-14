@@ -35,6 +35,16 @@ check the statement `status` and `issues.json`. Exit code **2** means a fatal in
 control failure. Fatal failures replace the named output files with blocked results,
 so an earlier run's figures are not left behind.
 
+The engine stages complete financial generations and publishes them by directory
+renames. It refuses to clear unrelated nonempty directories. Successful runs retain
+source-hashed PDF attachments but discard older submission archives; rebuild the archive
+after rerunning the engine. Windows rename locks have bounded retries. A persistent
+swap failure invalidates named financial files if they remain writable; process death
+or a wholly unwritable filesystem still needs operator recovery.
+
+Audit remediation is covered by **56 tests**, per-fix fresh-clone verification and
+unchanged default controls. See the cleaned summary and fix commits in VALIDATION.md.
+
 ## Current results
 
 | Control | GBP, unless a count |

@@ -26,29 +26,29 @@ def run(data: Path, out: Path):
 
 
 def _calculate(data, out, audit):
-        with localcontext() as context:
-            context.prec = 40
-            inputs = Inputs(data, audit)
-            local = inputs.load()
-            fx = FxBook(inputs)
-            counts, journals = apply_journals(inputs, local)
-            bank = retranslate_uk(inputs, fx, local)
-            causes, ic_refs = record_transit(inputs, fx, local)
-            local, pre_profit = cut_india(inputs, local)
-            opening = prior_equity(inputs)
-            translated, india_oci = translate(inputs, fx, local, opening)
-            eliminations = eliminate_intercompany(inputs, translated, causes)
-            india, india_entries = eliminate_india(inputs, fx, local, translated, pre_profit, india_oci)
-            eliminations.extend(india_entries)
-            eliminations.extend(block_uk_acquisition(inputs, translated))
-            for code in ('1250', '2150', '4200', '6300', '1610'):
-                value = total(translated, account=code)
-                audit.check(f'{code} eliminated in full', abs(value['value']) < EPSILON, value['sources'])
-            audit.check('NCI account matches closing control',
-                abs(-total(translated, account='3400')['value'] - india['nci_closing']) < EPSILON,
-                india['sources'])
-            reports, accounts = build_reports(inputs, translated, opening, india, bank, counts, causes, ic_refs)
-            reports['scenarios/alternative_disclosed_assumptions.json'] = alternative(
-                inputs, fx, opening, local, translated, india, bank, reports)
-            emit(out, inputs, reports, accounts, translated, eliminations, journals)
-            return reports['control_figures_sd.json']
+    with localcontext() as context:
+        context.prec = 40
+        inputs = Inputs(data, audit)
+        local = inputs.load()
+        fx = FxBook(inputs)
+        counts, journals = apply_journals(inputs, local)
+        bank = retranslate_uk(inputs, fx, local)
+        causes, ic_refs = record_transit(inputs, fx, local)
+        local, pre_profit = cut_india(inputs, local)
+        opening = prior_equity(inputs)
+        translated, india_oci = translate(inputs, fx, local, opening)
+        eliminations = eliminate_intercompany(inputs, translated, causes)
+        india, india_entries = eliminate_india(inputs, fx, local, translated, pre_profit, india_oci)
+        eliminations.extend(india_entries)
+        eliminations.extend(block_uk_acquisition(inputs, translated))
+        for code in ('1250', '2150', '4200', '6300', '1610'):
+            value = total(translated, account=code)
+            audit.check(f'{code} eliminated in full', abs(value['value']) < EPSILON, value['sources'])
+        audit.check('NCI account matches closing control',
+            abs(-total(translated, account='3400')['value'] - india['nci_closing']) < EPSILON,
+            india['sources'])
+        reports, accounts = build_reports(inputs, translated, opening, india, bank, counts, causes, ic_refs)
+        reports['scenarios/alternative_disclosed_assumptions.json'] = alternative(
+            inputs, fx, opening, local, translated, india, bank, reports)
+        emit(out, inputs, reports, accounts, translated, eliminations, journals)
+        return reports['control_figures_sd.json']
