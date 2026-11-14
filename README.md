@@ -42,7 +42,7 @@ after rerunning the engine. Windows rename locks have bounded retries. A persist
 swap failure invalidates named financial files if they remain writable; process death
 or a wholly unwritable filesystem still needs operator recovery.
 
-Audit remediation is covered by **56 tests**, per-fix fresh-clone verification and
+Audit remediation is covered by **57 tests**, per-fix fresh-clone verification and
 unchanged default controls. See the cleaned summary and fix commits in VALIDATION.md.
 
 ## Current results

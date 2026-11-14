@@ -28,7 +28,7 @@ evidence. Affected figures are explicitly null with reasons; independently suppo
 figures remain available. The journal review policy and all assumptions are disclosed.
 
 A separately labelled alternative scenario shows conditional totals and the opening-equity
-bridge without replacing the conservative controls. The validation suite contains 56
+bridge without replacing the conservative controls. The validation suite contains 57
 passing tests, including audit regressions and changed-input checks; default figures
 were verified unchanged from fresh clones after each fix.
 

@@ -2,7 +2,7 @@
 
 ## Audit remediation - final verification
 
-**56 tests pass; 64 runtime checks pass on the original bundle.** After every fix,
+**57 tests pass; 64 runtime checks pass on the original bundle.** After every fix,
 the full suite was run, the committed repository was cloned into a new temporary
 directory, the suite and one-command consolidation were run there, and the resulting
 12-key control JSON was compared with a frozen pre-fix baseline. Every comparison
@@ -19,7 +19,7 @@ are covered by committed regression tests, including test_transcript_export.py.
 | Malformed journals left stale results; empty journals could post | Validate journal structure/amount types; stage complete output generations. Null/empty entry structures and an unexpected mid-write TypeError publish failed results with null controls and remove stale financial artifacts. Unrelated output directories are refused. | 07fedcc |
 | SGD scalar returned only the last row | Aggregate all SGD cash rows. Two equivalent SGD 20,000 rows at synthetic rate 1.7 produce the same GBP 23,529.41 control as one SGD 40,000 row. | 122aeaa |
 | Split reversal bypassed liability check | Check the journal's net movement per account. Two GBP 32,000 debits still hold JE-009 and do not create a debit accrual balance. | 3c84634 |
-| Split audit fee bypassed duplicate check | Fingerprint net local-account movements by entity/date. Two USD 24,000 debits in JE-019 still match JE-014 and remain held. | 4ab6c05 |
+| Split audit fee bypassed duplicate check | Fingerprint net local-account movements by entity and parsed date. Split lines and equivalent ISO date formatting still match JE-014 and remain held. | 4ab6c05, 01e26e4 |
 | Scenario hard-coded GBP 23,010 | Derive carrying value from source SGD cash rows and use it in the amount and all disclosures. A changed GBP 24,010 book value is reported consistently. | a1ee2d2 |
 | Foreign non-monetary accounts were remeasured | Explicit group-account monetary classification. Inventory, prepayments, PPE and deferred income with foreign transaction metadata retain their recorded functional-GBP values. | 789b8cd |
 | Transcript redaction suppressed arbitrary summaries | Redact private title/summary values only in identified chat-discovery results; ordinary financial summaries and AI mistakes remain. Test both privacy and preservation, including nested JSON. | e786672 |
@@ -86,7 +86,7 @@ Tests use temporary copies when changing inputs. The committed source bundle is 
 edited. Runtime uses Decimal at precision 40; two-place rounding happens at output only.
 Passing controls validate the supported workings, not the blocked financial statements.
 
-Final local verification: **56 tests passed** on Windows with Python 3.14.3, including
+Final local verification: **57 tests passed** on Windows with Python 3.14.3, including
 a fresh local Git clone, source-byte integrity, and the one-command output run. The CI
 workflow is configured for Python 3.11 and 3.14 on Linux; no remote CI run is claimed.
 
