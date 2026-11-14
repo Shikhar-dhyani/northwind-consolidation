@@ -98,6 +98,9 @@ def alternative(inputs, fx, opening, local, postings, india, bank, reports):
                        + ('A2 SGD carried at GBP 23,010 with no FX adjustment.' if uses_a2
                           else 'A2 not used: supplied SGD closing FX applied.'))
     return {'status': 'alternative_only_not_authoritative', 'currency': 'GBP',
+        'translation_reserve_basis': 'Control translation_reserve_movement is owners-only account 3300. '
+            'It excludes the 20% share of India translation allocated to NCI (account 3400); '
+            'changes_in_equity shows owners_translation and nci_translation separately.',
         'assumptions': {
             'A1': 'TB equity represents opening balances; no unreported dividends, capital/reserve '
                   'movements or in-year historical adjustment movements. The historical net adjustment '

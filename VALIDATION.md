@@ -22,6 +22,10 @@ Under A1/A1.gross/A2, the alternative reports:
 | Total assets | 28,596,245.74 | A1/A1.gross/A2 |
 | Owners' translation reserve movement | 43,881.36 | A1 |
 
+The GBP 0.01 displayed balance difference results from independently rounding each total; no plug is posted.
+Reserve 3300 movement is owners-only: GBP 43,881.36 excludes India's NCI translation loss of GBP 21,665.17 in account 3400.
+Independent NCI bridge: GBP 1,285,958.29 acquisition NCI + GBP 70,042.43 H2 profit - GBP 21,665.17 translation = GBP 1,334,335.55 closing NCI (computed before rounding).
+
 The gross-scenario liabilities are GBP 10,206,270.51. Assets minus liabilities minus
 equity is zero before rounding; independently rounded displayed totals differ by GBP
 0.01, explicitly disclosed without a plug. The separate equity bridge uses parent

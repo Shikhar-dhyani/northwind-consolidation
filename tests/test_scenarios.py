@@ -45,6 +45,9 @@ def test_alternative_is_separate_balanced_and_has_per_figure_dependencies(tmp_pa
     assert result['figure_dependencies']['total_assets'] == ['A1', 'A1.gross', 'A2']
     assert result['figure_dependencies']['translation_reserve_movement'] == ['A1']
     assert result['sgd_bank_closing_measurement'] is None
+    assert 'owners-only account 3300' in result['translation_reserve_basis']
+    moves = result['changes_in_equity']
+    assert moves['owners_translation'] + moves['nci_translation'] == moves['total_translation']
     reasons = json.loads((tmp_path / 'out/control_explanations.json').read_text())
     assert '2,814,702.81' in ' '.join(reasons['group_profit']['reasons'])
 
