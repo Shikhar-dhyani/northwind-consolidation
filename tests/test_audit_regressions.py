@@ -128,3 +128,10 @@ def test_nonmonetary_foreign_transactions_keep_historical_gbp(bundle, tmp_path, 
     assert result['controls']['group_profit'] == D('2814702.81')
     issues = read_json(tmp_path / 'out/issues.json')
     assert any(i['code'] == 'nonmonetary_historical_carrying' for i in issues)
+
+
+def test_invoice_matching_ignores_equivalent_decimal_format(bundle, tmp_path):
+    mutate_csv(bundle / 'intercompany.csv', lambda rows: rows[-1].update(doc_amount='157460.0'))
+    controls = run(bundle, tmp_path / 'out')
+    assert controls['group_revenue'].quantize(D('.01')) == D('28301607.81')
+    assert abs(controls['intercompany_difference']['balance_residual_after_resolution']) < D('1e-24')
