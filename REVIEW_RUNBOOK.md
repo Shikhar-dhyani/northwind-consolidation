@@ -47,6 +47,29 @@ revenue while reported profit remains null because the SGD dependency is unresol
 
 ## Files to keep open
 
+Before the session, reread these paths and explain their boundaries without relying
+on the transcript:
+
+- consolidation/journals.py: parsed dates and net-account fingerprints, prospective
+  accrual balances, and the distinction between rejection and review holds.
+- consolidation/scenarios.py: conditional opening-equity bridge, the explicit whitelist
+  of unknowns covered by A1/A1.gross/A2, and rejection of other unquantified dependencies.
+- consolidation/publication.py: complete staged generations, directory swaps, Windows
+  lock retries, and failure-result invalidation. Know the documented OS/concurrency limits.
+- consolidation/reporting.py: final rounding, null reasons, posting provenance and output schemas.
+
+For journal changes, predict both classification and the amount effect. Removing held
+JE-019 changes the held count but no amounts. Removing posted JE-014 lets the otherwise
+identical JE-019 become the retained audit accrual, so the expense is still recorded once.
+Increasing both legs of a valid US expense/accrual journal by USD 1,000 changes translated
+expense by 1,000 / 1.278 and the liability by 1,000 / 1.253; changing only one leg instead
+rejects the whole now-unbalanced journal, not just its difference. Default group profit remains null until SGD closing
+FX is supplied; NCI is unaffected by a parent-only expense change.
+
+GitHub Actions runs the suite and the one-command consolidation on clean Linux CI
+runners for Python 3.11 and 3.14. Those automated checks complement a fresh local clone;
+they do not replace your own rehearsal on another computer before the live session.
+
 | Question | Evidence |
 |---|---|
 | What are the results? | output/control_figures_sd.json and output/control_explanations.json |

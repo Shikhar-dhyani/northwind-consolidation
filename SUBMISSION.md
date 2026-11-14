@@ -47,6 +47,11 @@ PDF generation is optional and is not a dependency of the financial run.
 
 ## Transcript boundary
 
+The later Claude review messages supplied here are also preserved separately in
+transcripts/claude-review-pasted-excerpts.jsonl with provenance and text hashes. They
+do not certify completeness of the external Claude session. A full native export or
+shared conversation record is still needed if additional external turns contributed.
+
 Claude planning is preserved exactly as provided by the candidate; its completeness is
 not independently verified against Claude. The Codex export includes completed turns
 and the active turn through its stated boundary. To include the current turn's final

@@ -1,0 +1,9 @@
+{
+  "path": "claude-review-pasted-excerpts.jsonl",
+  "sha256": "4b86920df752ae89614190d2f624ad76c5943746b23d85e27d24f516614547f3",
+  "records": 5,
+  "source_session": "rollout-2026-11-13T21-15-10-01a1d595-897b-7970-b806-8e5bf2d6f652.jsonl",
+  "provenance": "Review messages pasted by the candidate into Codex and described as Claude exchanges",
+  "completeness": "Excerpts only, not a complete native Claude session export",
+  "preservation": "Each supplied message is verbatim, including candidate additions. No missing messages, roles, attachments or tool records are reconstructed."
+}

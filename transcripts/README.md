@@ -14,6 +14,13 @@ by the candidate. `SESSIONS.json` records its source and SHA-256. No speaker lab
 missing tool records or attachments have been reconstructed. Completeness of the pasted
 Claude record is candidate-provided, rather than independently verified against Claude.
 
+`claude-review-pasted-excerpts.jsonl` separately preserves the later review exchanges
+that the candidate pasted into this chat, including the audit and remediation discussion.
+`CLAUDE_REVIEW_PROVENANCE.json` records their source, hashes and coverage. These are
+supplied excerpts, not a complete native Claude review-session export; omitted external
+turns cannot be recovered from the Codex log. Add a native export or shared record if
+there are additional contributing exchanges outside those supplied here.
+
 The current conversation is still in progress when exported. Refresh after it finishes:
 
 ```bash
