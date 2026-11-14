@@ -151,3 +151,14 @@ def test_duplicate_subledger_control_cannot_be_counted_twice(bundle, tmp_path):
     mutate_csv(bundle / 'subledger_controls.csv', lambda rows: rows.append(dict(rows[0])))
     with pytest.raises(InputError, match='duplicate subledger control'):
         run(bundle, tmp_path / 'out')
+
+
+def test_alternative_lists_unknown_fx_not_covered_by_sgd_bank_assumption(bundle, tmp_path):
+    mutate_csv(bundle / 'tb_uk.csv', lambda rows: rows[1].update(txn_currency='EUR'))
+    controls = run(bundle, tmp_path / 'out')
+    assert controls['group_profit'] is None
+    result = read_json(tmp_path / 'out/scenarios/alternative_disclosed_assumptions.json')
+    assert result['status'] == 'blocked_unquantified_dependencies'
+    assert {d['source_currency'] for d in result['unquantified_dependencies']} == {'EUR'}
+    assert all(value is None for value in result['controls'].values())
+    assert any(i['code'] == 'alternative_unquantified_dependency' for i in read_json(tmp_path / 'out/issues.json'))

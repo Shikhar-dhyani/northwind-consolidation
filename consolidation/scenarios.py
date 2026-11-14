@@ -40,6 +40,25 @@ def alternative(inputs, fx, opening, local, postings, india, bank, reports):
         return {'status': 'blocked', 'reason': 'Opening bridge no longer agrees; A1 cannot be supported.',
                 'opening_equity_bridge': bridge}
     refs = sources(bridge['sources'], *(p.refs for p in postings))
+    bank_unknown_refs = {p.refs for p in postings if p.amount is None and p.entity == 'UK'
+                         and p.account == '1100' and p.entry == 'SGD' and p.stage.startswith('entity_fx')}
+    def covered(p):
+        return ((p.entity == 'US' and p.account == '3200' and p.stage == 'translation')
+                or (p.entity == 'US' and p.entry == 'US_CTA')
+                or (p.stage == 'held_elimination' and p.entry == 'UK_ACQUISITION')
+                or (p.entity == 'UK' and p.entry == 'SGD' and p.refs in bank_unknown_refs
+                    and p.account in ('1100', '7300') and p.stage.startswith('entity_fx')))
+    unquantified = [{'entity': p.entity, 'account': p.account, 'source_currency': p.entry,
+                    'reasons': list(p.reasons), 'sources': list(p.refs)}
+                   for p in postings if p.amount is None and not covered(p)]
+    if unquantified:
+        reason = 'Unquantified dependencies outside A1/A1.gross/A2; alternative amounts are blocked, not treated as zero.'
+        inputs.audit.issue('alternative_unquantified_dependency', refs, None, 'GBP', 'blocked', reason,
+            at=next((r for d in unquantified for r in d['sources'] if '/tb_' in r), refs[0]))
+        return {'status': 'blocked_unquantified_dependencies', 'reason': reason,
+                'opening_equity_bridge': bridge, 'unquantified_dependencies': unquantified,
+                'controls': {key: None for key in ('group_profit', 'profit_owners', 'total_equity',
+                            'total_assets', 'translation_reserve_movement')}, 'sources': list(refs)}
     def known(types):
         return sum((p.amount for p in postings if p.amount is not None
                     and inputs.coa[p.account]['account_type'] in types), ZERO)
@@ -100,6 +119,7 @@ def alternative(inputs, fx, opening, local, postings, india, bank, reports):
                        + (f'A2 SGD carried at GBP {bank_carrying:,.2f} with no FX adjustment.' if uses_a2
                           else 'A2 not used: supplied SGD closing FX applied.'))
     return {'status': 'alternative_only_not_authoritative', 'currency': 'GBP',
+        'unquantified_dependencies': [],
         'translation_reserve_basis': 'Control translation_reserve_movement is owners-only account 3300. '
             'It excludes the 20% share of India translation allocated to NCI (account 3400); '
             'changes_in_equity shows owners_translation and nci_translation separately.',
