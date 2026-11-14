@@ -16,6 +16,8 @@ class InputError(ValueError):
 
 
 def decimal(value: str) -> Decimal:
+    if isinstance(value, bool) or not isinstance(value, (str, int, Decimal)):
+        raise InputError('Amounts must be decimal strings or integers, not floats or null')
     try:
         result = Decimal(value)
     except (InvalidOperation, TypeError) as exc:

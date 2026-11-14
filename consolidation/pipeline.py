@@ -12,14 +12,20 @@ from .model import Audit, EPSILON, InputError, total
 from .periods import cut_india
 from .reporting import build_reports, emit, emit_failure
 from .scenarios import alternative
+from .publication import check_destination, execute
 
 
 def run(data: Path, out: Path):
+    requested_out = Path(out)
     data, out = Path(data).resolve(), Path(out).resolve()
     if out == data or data in out.parents or out in data.parents:
         raise InputError('Input and output directories must be separate, non-nested paths')
+    check_destination(requested_out)
     audit = Audit()
-    try:
+    return execute(data, out, audit, _calculate, emit_failure)
+
+
+def _calculate(data, out, audit):
         with localcontext() as context:
             context.prec = 40
             inputs = Inputs(data, audit)
@@ -46,6 +52,3 @@ def run(data: Path, out: Path):
                 inputs, fx, opening, local, translated, india, bank, reports)
             emit(out, inputs, reports, accounts, translated, eliminations, journals)
             return reports['control_figures_sd.json']
-    except (InputError, KeyError, ValueError, OSError) as exc:
-        emit_failure(out, audit, exc)
-        raise InputError(str(exc)) from exc

@@ -29,9 +29,23 @@ class Inputs:
 
     def journals(self):
         text = (self.root / 'adjustments.json').read_text(encoding='utf-8-sig')
-        entries = json.loads(text)['entries']
+        batch = json.loads(text)
+        if not isinstance(batch, dict) or not isinstance(batch.get('entries'), list):
+            raise InputError('data/adjustments.json:1: entries must be a list')
+        entries = batch['entries']
         ids = set()
         for index, entry in enumerate(entries):
+            ref = f'data/adjustments.json:1#/entries/{index}'
+            if not isinstance(entry, dict) or any(not isinstance(entry.get(k), str) or not entry[k]
+                    for k in ('id', 'entity', 'date')):
+                raise InputError(f'{ref}: journal needs string id/entity/date')
+            if not isinstance(entry.get('lines'), list) or not entry['lines']:
+                raise InputError(f'{ref}: journal lines must be a nonempty list')
+            for leg in entry['lines']:
+                if not isinstance(leg, dict) or not isinstance(leg.get('account'), str) or not leg['account']:
+                    raise InputError(f'{ref}: journal line needs an account')
+                for amount in ('debit', 'credit'):
+                    decimal(leg.get(amount))
             if entry['id'] in ids:
                 raise InputError('Duplicate journal id')
             ids.add(entry['id'])
