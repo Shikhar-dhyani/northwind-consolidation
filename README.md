@@ -111,6 +111,7 @@ conversion. [ARCHITECTURE.md](ARCHITECTURE.md) explains the accounting stages.
 - [Transcripts](transcripts/README.md): AI session records and provenance.
 - [Candidate guide](CANDIDATE_GUIDE.md): decision context, alternatives, rationale, journal/control answers and reviewer Q&A.
 - [Review runbook](REVIEW_RUNBOOK.md): a 45-minute walkthrough and input-change examples.
+- [Presentation walkthrough](PRESENTATION_WALKTHROUGH.md): beginner data-to-code rehearsal with files, highlights, suggested wording and demonstrations.
 - [Clarifications](CLARIFICATIONS.md): missing evidence, current treatment and what would change.
 - [Submission](SUBMISSION.md): deliverable checklist and archive-building instructions.
 - [Email draft](SUBMISSION_EMAIL.md): prepared text for the original assignment email thread.
