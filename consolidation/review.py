@@ -182,6 +182,7 @@ def offline_proposals(review, trace):
 def run_review(data, out, mode='offline', *, provider=None, max_steps=20):
     out = Path(out)
     trace, review, backend = [], None, None
+    initial_context = None
     report = {'mode': mode, 'llm_called': False, 'model': None, 'status': 'disabled',
         'advisory_only': True, 'accounting_changed': False, 'proposals': [],
         'note': 'Model prose is unverified advice. No review output authorizes a ledger change.'}
@@ -198,8 +199,9 @@ def run_review(data, out, mode='offline', *, provider=None, max_steps=20):
         else:
             backend = provider if provider is not None else FoundryClaude()
             report['model'] = backend.model
-            messages = [{'role': 'user', 'content': json.dumps({'task': 'Review these exceptions using evidence tools.',
-                'cases': [{'issue_id': c['id'], 'code': c['code']} for c in review.cases.values()]})}]
+            initial_context = {'task': 'Review these exceptions using evidence tools.',
+                'cases': [{'issue_id': c['id'], 'code': c['code']} for c in review.cases.values()]}
+            messages = [{'role': 'user', 'content': json.dumps(initial_context)}]
             for step in range(max_steps):
                 response = backend.complete(SYSTEM, messages, TOOLS)
                 report['llm_called'] = True
@@ -238,5 +240,6 @@ def run_review(data, out, mode='offline', *, provider=None, max_steps=20):
                       else f'Review failed ({type(error).__name__}); accounting outputs retained')
     finally:
         write_json(out / 'review_report.json', report)
-        write_json(out / 'agent_trace.json', {'mode': mode, 'steps': trace})
+        write_json(out / 'agent_trace.json', {'mode': mode, 'system': SYSTEM, 'tools': TOOLS,
+            'initial_context': initial_context, 'steps': trace})
     return report

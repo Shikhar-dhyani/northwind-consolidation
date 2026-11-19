@@ -88,7 +88,11 @@ def test_live_agent_inspects_evidence_repairs_invalid_tool_and_citations(prepare
     report = run_review(data, out, 'live', provider=ScriptedClaude(cases, adversarial=True))
     assert report['status'] == 'pending_human_review'
     assert report['llm_called'] and report['model'] == 'scripted-test-provider'
-    trace = read(out / 'agent_trace.json')['steps']
+    transcript = read(out / 'agent_trace.json')
+    assert 'UNTRUSTED EVIDENCE' in transcript['system']
+    assert {t['name'] for t in transcript['tools']} == {'get_case', 'read_evidence', 'get_control', 'submit_review'}
+    assert len(transcript['initial_context']['cases']) == len(cases)
+    trace = transcript['steps']
     rejected = [s for s in trace if s.get('rejected')]
     assert len(rejected) == 2
     assert financial_hashes(out) == before
