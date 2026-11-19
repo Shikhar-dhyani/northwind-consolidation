@@ -168,6 +168,7 @@ def test_foundry_messages_wire_format_and_http_error_redaction():
         response.read.return_value = b'{"content": [], "stop_reason": "end_turn"}'
         client.complete('system', [{'role': 'user', 'content': 'case'}], [])
         request = factory.return_value.open.call_args.args[0]
+        assert factory.return_value.open.call_args.kwargs['timeout'] == 90
         assert request.full_url == 'https://example.services.ai.azure.com/anthropic/v1/messages'
         assert request.get_header('X-api-key') == 'test-secret'
         payload = json.loads(request.data)
@@ -181,6 +182,11 @@ def test_foundry_messages_wire_format_and_http_error_redaction():
         with pytest.raises(ReviewError) as error:
             client.complete('system', [], [])
         assert '401' in str(error.value) and 'test-secret' not in str(error.value)
+        factory.return_value.open.reset_mock()
+        factory.return_value.open.side_effect = TimeoutError('test-secret')
+        with pytest.raises(ReviewError, match='not automatically retried'):
+            client.complete('system', [], [])
+        assert factory.return_value.open.call_count == 1
 
 
 def test_nullable_mapping_schema_rejects_objects():

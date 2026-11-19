@@ -66,7 +66,7 @@ class FoundryClaude:
             'x-api-key': self.key, 'anthropic-version': '2023-06-01'}, method='POST')
         for attempt in range(3):
             try:
-                with build_opener(NoRedirect).open(request, timeout=30) as response:
+                with build_opener(NoRedirect).open(request, timeout=90) as response:
                     raw = response.read(1_000_001)
                 if len(raw) > 1_000_000:
                     raise ReviewError('Provider response exceeds review budget')
@@ -81,7 +81,13 @@ class FoundryClaude:
                     time.sleep(.25 * 2 ** attempt)
                     continue
                 raise ReviewError(f'Azure Claude HTTP {status}; inspect endpoint, deployment, quota and credentials locally') from None
-            except (URLError, TimeoutError, OSError):
+            except TimeoutError:
+                # The provider may already have generated/billed a timed-out POST.
+                # Do not automatically duplicate a long final-review generation.
+                raise ReviewError('Azure Claude request timed out after 90 seconds; not automatically retried') from None
+            except (URLError, OSError) as error:
+                if isinstance(getattr(error, 'reason', None), TimeoutError):
+                    raise ReviewError('Azure Claude request timed out after 90 seconds; not automatically retried') from None
                 if attempt < 2:
                     time.sleep(.25 * 2 ** attempt)
                     continue
