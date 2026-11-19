@@ -22,7 +22,8 @@ from consolidation.reporting import CONTROL_KEYS, rounded
 FINANCIAL_FILES = ('consolidated_tb.csv', 'balance_sheet.json', 'profit_and_loss.json',
     'changes_in_equity.json', 'eliminations.csv', 'issues.json', 'control_figures_sd.json',
     'control_explanations.json', 'journal_decisions.json', 'ledger_postings.csv',
-    'validation.json', 'input_manifest.json', 'scenarios/alternative_disclosed_assumptions.json')
+    'validation.json', 'input_manifest.json', 'scenarios/alternative_disclosed_assumptions.json',
+    'review_report.json', 'agent_trace.json')
 
 
 def command(*args):
@@ -70,6 +71,9 @@ def main():
     validation = json.loads((ROOT / 'output/validation.json').read_text())
     if not all(check['passed'] for check in validation['checks']):
         raise RuntimeError('Runtime control failed')
+    review = json.loads((ROOT / 'output/review_report.json').read_text())
+    if review['status'] == 'failed':
+        raise RuntimeError('Review baseline failed; inspect review_report.json')
     coverage = json.loads((ROOT / 'transcripts/EXPORT_STATUS.json').read_text())
     if not coverage['earlier_planning_sessions_available']:
         raise RuntimeError('Earlier planning-session record is missing')
@@ -101,6 +105,7 @@ def main():
         'pdf_attachments': [p.name for p in docs if p.suffix == '.pdf'],
         'email_status': 'Draft prepared; no email sent',
         'financial_status': 'partial_blocked as disclosed; missing inputs are not estimated'}
+    report['agent_review'] = {key: review[key] for key in ('mode', 'status', 'llm_called', 'model')}
     report_path = out / 'BUILD_REPORT.json'
     report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
     archive = out / 'northwind-consolidation-NWG-D0BC.zip'

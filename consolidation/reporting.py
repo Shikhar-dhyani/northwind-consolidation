@@ -149,6 +149,8 @@ def emit_failure(out, audit, error):
     """Replace all financial outputs on failure; never leave a previous good run."""
     out.mkdir(parents=True, exist_ok=True)
     reason = f'Input/control failure: {error}'
+    write_json(out / 'review_report.json', {'status': 'blocked_accounting_failure', 'proposals': [], 'llm_called': False})
+    write_json(out / 'agent_trace.json', {'steps': []})
     write_json(out / 'scenarios/alternative_disclosed_assumptions.json', {'status': 'blocked', 'reason': reason})
     refs = getattr(error, 'refs', ())
     if not refs:

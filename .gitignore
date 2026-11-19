@@ -8,3 +8,6 @@ output/
 tmp/
 Claude outputs/
 .DS_Store
+.env
+.env.*
+!.env.example

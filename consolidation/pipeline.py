@@ -13,16 +13,21 @@ from .periods import cut_india
 from .reporting import build_reports, emit, emit_failure
 from .scenarios import alternative
 from .publication import check_destination, execute
+from .review import run_review
 
 
-def run(data: Path, out: Path):
+def run(data: Path, out: Path, *, review_mode='offline'):
     requested_out = Path(out)
     data, out = Path(data).resolve(), Path(out).resolve()
     if out == data or data in out.parents or out in data.parents:
         raise InputError('Input and output directories must be separate, non-nested paths')
     check_destination(requested_out)
     audit = Audit()
-    return execute(data, out, audit, _calculate, emit_failure)
+    def calculate(data, stage, audit):
+        result = _calculate(data, stage, audit)
+        run_review(data, stage, review_mode)
+        return result
+    return execute(data, out, audit, calculate, emit_failure)
 
 
 def _calculate(data, out, audit):
