@@ -15,18 +15,28 @@ python -m pytest -q
 
 Check the statement status and issues, not just the process exit code. This bundle
 intentionally produces partial_blocked statements. Prepare the repository locally;
-the runtime consolidation needs no internet, model, credentials or optional PDF packages.
+the default accounting/offline-review run needs no internet, model credentials or optional PDF packages.
 
 ## Suggested walkthrough
 
 | Minutes | Demonstration |
 |---|---|
 | 0-5 | Explain the group, acquisition period, policy constraints and incomplete inputs. |
-| 5-12 | Show architecture: deterministic arithmetic, proposed review agent, no agent ledger authority. |
+| 5-12 | Show architecture: deterministic arithmetic, implemented Claude review agent, no agent ledger authority. |
 | 12-20 | Trace revenue and India goodwill/NCI from controls through source/rate rows and postings. |
 | 20-28 | Explain JE-006 rejection, duplicate/overlap holds, mapping correction and IC causes. |
 | 28-38 | Predict changed inputs, then run selected examples below. |
 | 38-45 | Explain actual AI mistakes, current limits, three-month plan and questions. |
+
+## Agent demonstration
+
+Open AGENT_REVIEW.md, consolidation/review.py and consolidation/claude_foundry.py.
+Show review_report.json and agent_trace.json: mode, model, evidence calls, rejected
+proposals and pending human review. The default baseline is offline rules, not a model.
+With the ignored .env configured, run the same command with --review live for actual
+Azure Claude tool use. Predict that financial controls do not change. A missing key,
+provider error or exhausted agent budget yields review status failed and CLI exit 3;
+valid accounting outputs remain available. Do not present protocol fixtures as a live run.
 
 ## Focused changed-input examples
 

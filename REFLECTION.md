@@ -4,12 +4,12 @@ With three months I would spend the first part on a finance-reviewed policy and 
 model rather than adding more agents. Every mapping, accrual reversal, acquisition and
 rate would have an owner, effective date, supporting document and recorded approval.
 I would replace the acquisition-note template with structured completion accounts,
-build a review queue for ambiguous journals, and import prior consolidation workings
+add a finance review UI over the JSON proposal queue, and import prior consolidation workings
 so opening equity, goodwill and translation reserves can be reconciled directly.
 
-The deterministic calculation engine would sit behind immutable run snapshots and
-typed decisions. An exception-review assistant could summarize evidence and propose
-changes, but could not post a journal or create a rate. A proposed change would create
+The engine and bounded Claude review agent would sit behind immutable snapshots and
+typed reviewer decisions. The implemented agent can inspect evidence and propose
+actions, but cannot post a journal or create a rate. An approved change would create
 a new candidate run with a visible financial diff, followed by the same validation gates.
 Publication would switch an atomic pointer only after a finance reviewer accepts the
 run. I would add independent accounting review, property-based tests and a broader

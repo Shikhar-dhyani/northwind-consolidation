@@ -17,6 +17,11 @@ VALIDATION.md, AI-session records and one-page reflection, with the full commit 
 The architecture and reflection are also available as PDF attachments in the prepared
 submission package.
 
+The prototype includes an Azure Foundry Claude agent for evidence inspection and
+human-review proposals. The default run uses a labelled offline rules baseline;
+live model tool use is opt-in through local configuration. Neither path gives the
+model authority over accounting postings or figures.
+
 Run the prototype with:
 
 ```bash
@@ -28,7 +33,7 @@ evidence. Affected figures are explicitly null with reasons; independently suppo
 figures remain available. The journal review policy and all assumptions are disclosed.
 
 A separately labelled alternative scenario shows conditional totals and the opening-equity
-bridge without replacing the conservative controls. The validation suite contains 62
+bridge without replacing the conservative controls. The validation suite contains 81
 passing tests, including audit regressions and changed-input checks; default figures
 were verified unchanged from fresh clones after each fix.
 

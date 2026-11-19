@@ -2,7 +2,7 @@
 
 ## Audit remediation to explain in the live session
 
-The final suite has 62 tests and the original run executes 64 runtime checks. Every
+The final suite has 81 tests and the original run executes 64 runtime checks. Every
 audit fix was checked through the full suite, a fresh committed clone and equality to
 the pre-fix default controls. Original default and conditional financial figures did not
 change. VALIDATION.md records the per-fix commits and regressions.
@@ -110,7 +110,7 @@ errors, missing rates or missing acquisition data.
 
 ## The seven decisions and how to answer them
 
-### 1. Why deterministic Python and only one proposed review agent?
+### 1. Why deterministic Python and only one bounded review agent?
 
 **Context:** the problem combines reliable arithmetic with messy descriptions and
 exceptions. The brief criticizes over-engineered agent topologies.
@@ -119,15 +119,18 @@ exceptions. The brief criticizes over-engineered agent topologies.
 each entity; or one deterministic engine is surrounded by an assistant for exceptions.
 
 **Suggested answer:** "I chose deterministic Python for every financial amount, mapping
-application, rate conversion and validation gate. I would use one review agent to
-interpret unfamiliar descriptions and summarize evidence for a finance reviewer. It
+application, rate conversion and validation gate. One implemented review agent uses
+Claude on Azure Foundry to inspect exceptions and draft evidence-backed proposals. It
 cannot post to the ledger. That keeps the numerical result repeatable while using an
 LLM for work that actually needs language understanding."
 
 **Trade-off:** less automatic handling of unfamiliar exports; more explicit rules to
 maintain. **What AI contributed:** the handoff proposed deterministic Python; Codex
-implemented it and proposed the single review agent. **Proof:** no runtime LLM or
-network call appears in the accounting pipeline.
+implemented the single review agent after the candidate selected Azure-hosted Claude.
+**Proof:** financial calculation modules have no model calls; review.py runs the bounded
+tool loop through claude_foundry.py. Default offline mode is labelled as rules, not AI.
+Live mode needs a deployed model and credentials; scripted provider tests establish
+protocol and capability boundaries, not the quality of a real model's reasoning.
 
 ### 2. Why return null and propagate it?
 

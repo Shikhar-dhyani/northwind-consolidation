@@ -1,5 +1,28 @@
 # Validation evidence
 
+## Agent extension - 19 November 2026
+
+Commit 94ae9b8 adds one evidence-review agent and the Azure Foundry Claude Messages
+adapter. The original 62 test cases are retained; 19 agent cases bring the suite to 81.
+Financial runtime checks remain 64 because advisory review is separately validated.
+Default financial controls are compared against the frozen original baseline.
+
+tests/test_review.py exercises both the deterministic offline broker and the live loop
+with a scripted Messages-protocol test double. The adversarial fixture tries to post
+JE-006 and cite invented evidence; both are rejected, feedback is returned, and corrected
+proposals are queued. Input manifest checks reject changed source bytes; tools reject
+arbitrary file access. Tests cover context/step boundaries, configuration absence,
+finite JSON, nullable mapping validation, HTTP authentication error redaction and
+bounded transient retries. All proposals remain pending human review, and financial
+artifact hashes do not change when the agent runs.
+
+Provider-request encoding and mocked response handling are tested independently of
+the agent loop. These are integration/protocol fixtures, not proof of a successful
+credentialed Claude call or model quality. Live smoke-test evidence requires a deployed
+model and the candidate's key in ignored local configuration. No live success is inferred
+from offline mode. CLI exit 3 reports review failure while retaining accounting results;
+accounting failure skips review and replaces stale agent artifacts with blocked outputs.
+
 ## Audit remediation - final verification
 
 Re-audit on 15 November 2026 checked the original brief, accounting and publication
@@ -8,7 +31,7 @@ limits. All 14 original audit probes were rerun and their outcomes reviewed alon
 the regression suite. The additional packaging defect below was fixed; no numerical
 regression was found in these checks. Original source hashes and default controls match.
 
-**62 tests pass; 64 runtime checks pass on the original bundle.** After every fix,
+**81 tests pass; 64 runtime checks pass on the original bundle.** After every fix,
 the full suite was run, the committed repository was cloned into a new temporary
 directory, the suite and one-command consolidation were run there, and the resulting
 12-key control JSON was compared with a frozen pre-fix baseline. Every comparison
@@ -94,7 +117,7 @@ Tests use temporary copies when changing inputs. The committed source bundle is 
 edited. Runtime uses Decimal at precision 40; two-place rounding happens at output only.
 Passing controls validate the supported workings, not the blocked financial statements.
 
-Final local verification: **62 tests passed** on Windows with Python 3.14.3, including
+Final local verification: **81 tests passed** on Windows with Python 3.14.3, including
 a fresh local Git clone, source-byte integrity, and the one-command output run. The CI
 workflow is configured for Python 3.11 and 3.14 on Linux; no remote CI run is claimed.
 

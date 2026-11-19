@@ -9,8 +9,8 @@ as `null` with reasons. It never substitutes a guessed exchange rate or acquisit
 
 ## Setup and run
 
-Python **3.11+**. Runtime uses only the standard library; no credentials, API, or network
-are needed. From a fresh clone:
+Python **3.11+**. Runtime uses only the standard library. The default accounting and
+offline review run needs no credentials or network. From a fresh clone:
 
 ```bash
 git clone https://github.com/Shikhar-dhyani/northwind-consolidation.git
@@ -33,7 +33,41 @@ Outputs are generated under `output/`, ignored by Git, and never edited manually
 Exit code **0** means the run completed, possibly with disclosed blocked figures;
 check the statement `status` and `issues.json`. Exit code **2** means a fatal input or
 control failure. Fatal failures replace the named output files with blocked results,
-so an earlier run's figures are not left behind.
+so an earlier run's figures are not left behind. Exit code **3** means accounting
+completed but the requested review failed; inspect review_report.json separately.
+
+## Implemented agent and live Azure Claude review
+
+One case-review agent can inspect selected exceptions through read-only evidence tools
+and draft structured human-review proposals. The tools are get_case, read_evidence,
+get_control and submit_review. Citation/action validation returns errors for bounded
+self-correction. No tool can post journals, invent rates or modify accounting results.
+
+The default `--review offline` uses deterministic rules through the same tool broker;
+it makes **no LLM call** and is explicitly labelled in its report. For real model calls:
+
+```powershell
+# Only create .env if you do not already have one:
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+# Edit .env locally, then:
+python -m consolidation --data data --out output --review live
+```
+
+Configure ANTHROPIC_FOUNDRY_API_KEY, ANTHROPIC_FOUNDRY_BASE_URL and
+ANTHROPIC_FOUNDRY_MODEL. Use your resource's Messages endpoint and the model name
+deployed there; the template's claude-sonnet-4-6 is an example, not an availability
+guarantee. `.env` is ignored and never packaged. Only simple KEY=value assignments
+are supported; environment variables take precedence. No shell expansion is performed.
+
+review_report.json records mode, model, whether a model response was received, pending
+proposals or explicit failure. agent_trace.json preserves returned text/tool calls,
+evidence and rejection feedback, excluding credentials and private reasoning.
+Live prose is advisory, not verified accounting. A human supplies supported corrections
+to reviewed inputs and reruns the engine. An approval UI and persistent override store
+are future work. Use `--review off` to disable the review layer explicitly.
+
+Live integration uses the [Azure Claude Messages endpoint](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/how-to/use-foundry-models-claude)
+and [Anthropic tool-use format](https://platform.claude.com/docs/en/agents-and-tools/tool-use/define-tools).
 
 The engine stages complete financial generations and publishes them by directory
 renames. It refuses to clear unrelated nonempty directories. Successful runs retain
@@ -42,7 +76,7 @@ after rerunning the engine. Windows rename locks have bounded retries. A persist
 swap failure invalidates named financial files if they remain writable; process death
 or a wholly unwritable filesystem still needs operator recovery.
 
-Audit remediation and transcript handling are covered by **62 tests**, per-fix fresh-clone verification and
+Audit remediation and transcript handling are covered by **81 tests**, per-fix fresh-clone verification and
 unchanged default controls. See the cleaned summary and fix commits in VALIDATION.md.
 
 ## Current results
@@ -84,6 +118,8 @@ See the review updates in DECISIONS.md, VALIDATION.md and CANDIDATE_GUIDE.md.
 | `ledger_postings.csv` | Contribution-level GBP postings for tracing a balance |
 | `validation.json` | Executed mechanical controls and their results |
 | `input_manifest.json` | SHA-256 of each input used by the run |
+| `review_report.json` | Review mode, model, pending human proposals or explicit failure |
+| `agent_trace.json` | Evidence tool calls, returned model text and validation feedback |
 
 Control scalars are JSON numbers or `null`. The two appendix breakdowns,
 `intercompany_difference` and `journals`, contain numeric components. Keeping reasons
@@ -112,6 +148,7 @@ conversion. [ARCHITECTURE.md](ARCHITECTURE.md) explains the accounting stages.
 - [Candidate guide](CANDIDATE_GUIDE.md): decision context, alternatives, rationale, journal/control answers and reviewer Q&A.
 - [Review runbook](REVIEW_RUNBOOK.md): a 45-minute walkthrough and input-change examples.
 - [Presentation walkthrough](PRESENTATION_WALKTHROUGH.md): beginner data-to-code rehearsal with files, highlights, suggested wording and demonstrations.
+- [Agent review](AGENT_REVIEW.md): implemented Claude tool loop, Azure configuration, capability boundaries and model-test evidence.
 - [Clarifications](CLARIFICATIONS.md): missing evidence, current treatment and what would change.
 - [Submission](SUBMISSION.md): deliverable checklist and archive-building instructions.
 - [Email draft](SUBMISSION_EMAIL.md): prepared text for the original assignment email thread.

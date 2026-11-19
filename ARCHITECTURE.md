@@ -18,18 +18,18 @@ Immutable bundle -> ERP adapters -> mapping and source controls -> journal gate
  -> intercompany and India acquisition eliminations -> statements -> checks -> output
 ```
 
-For a full product I would add **one case-review agent** around this engine, supervised
-by a finance reviewer. It receives structured exceptions and relevant source excerpts,
-proposes a mapping or a clarification question, and produces an explanation. It has no
-ledger-write tool. A reviewer accepts a typed, versioned override with evidence; the
-engine re-runs the complete calculation and records the decision. Separate autonomous
-agents per entity would increase coordination and inconsistent-policy risk without
-improving these small, interdependent accounting calculations.
+One implemented **case-review agent** surrounds this engine. Live mode uses Claude on
+Azure Foundry through the Messages API. It selects cases, retrieves bounded evidence,
+and submits proposals through four tools: get_case, read_evidence, get_control and
+submit_review. Local validation rejects unseen citations, forbidden actions and incomplete
+case coverage; errors return to the model for correction within 20 steps. No write,
+shell, arbitrary-file or network tool is exposed to the model.
 
-The agent earns its place on unfamiliar account descriptions, ambiguous journal
-purpose and concise evidence summaries. The deterministic engine decides schema
-validity, signs, amounts, dates, journal balance, rates, matching, arithmetic and output.
-The prototype implements the engine and review queue; it does not simulate an LLM call.
+Default offline mode is an explicitly labelled rules baseline through the same broker,
+not a simulated LLM. Live mode requires local credentials and a deployed model name.
+The agent earns its place by explaining ambiguous exceptions and drafting evidence
+requests. Accounting arithmetic and dispositions remain deterministic. All proposals
+await human review; supported input corrections require a complete accounting rerun.
 
 <div style="page-break-after: always;"></div>
 
@@ -57,8 +57,8 @@ These remain flagged rather than becoming invented adjusting journals.
 JE-006's memo requests bypassing controls. It is retained as evidence, flagged as
 instruction-like text and ignored as authority. Its USD 1,200 imbalance rejects it.
 Detection uses a limited marker list; containment is unconditional, even for wording
-the marker list misses. A future agent must receive source text as quoted evidence,
-never as tool instructions, and its proposed decisions must pass the same engine gates.
+the marker list misses. The agent receives source text as untrusted quoted evidence.
+Its tools enforce capability and citation boundaries even if it follows an injected memo.
 
 <div style="page-break-after: always;"></div>
 
@@ -179,9 +179,9 @@ In that resolved-rate scenario, a GBP 1,000 UK cash sale increases revenue and o
 with no NCI effect. Full details and genuine AI-error fix commits are in VALIDATION.md.
 
 The engine has no autonomous self-correction that silently modifies financial evidence.
-The product agent would propose, the finance reviewer would authorize a typed decision,
-and validation would decide whether the resulting run may progress. Review policies and
-the exact-label mapping correction are already explicit assumptions in this prototype.
+The agent proposes; a finance reviewer obtains evidence and corrects reviewed inputs;
+the engine validates a complete rerun. Invalid tool proposals receive corrective feedback.
+There is no model-authorized journal, rate, approval or financial output overwrite.
 
 Financial files are written into a temporary generation, then published using directory
 renames. Caught errors publish failed outputs; unrelated directories are protected.
@@ -190,7 +190,11 @@ The directory may briefly be unavailable between renames. Process termination or
 unwritable filesystem still requires recovery. PDFs survive successful runs; archives
 are rebuilt. There is no review UI, persistent decision store, policy language, concurrent
 input snapshot lock or atomically exchanged readiness pointer. Production needs immutable
-runs, an atomic ready pointer and access control.
+runs, an atomic ready pointer and access control. review_report.json holds pending
+proposals; agent_trace.json records calls, evidence, tool rejections and model usage.
+Sources are checked against the run manifest. API requests have 30-second timeouts,
+three bounded attempts for transient failures, token/context limits and no redirects.
+Review failure preserves financial results, records failure and gives CLI exit code 3.
 At scale, stream/partition ledger data and normalize provenance rather than repeating
 large source lists. The Claude planning conversation is preserved as supplied by the
 candidate; the Codex record includes completed turns and the active turn through its

@@ -63,7 +63,7 @@ class ScriptedClaude:
 
 
 def financial_hashes(out):
-    return {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in out.iterdir()
+    return {str(p.relative_to(out)): hashlib.sha256(p.read_bytes()).hexdigest() for p in out.rglob('*')
             if p.is_file() and p.name not in ('review_report.json', 'agent_trace.json')}
 
 

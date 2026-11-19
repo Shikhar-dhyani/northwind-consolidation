@@ -5,7 +5,7 @@ separate human accounting approval. Every assumption affecting results is also l
 The context and rationale below explain the choices implemented in this submission;
 the suggested first-person interview answers are in CANDIDATE_GUIDE.md.
 
-## 1. Deterministic accounting, one review agent in the product design
+## 1. Deterministic accounting, one bounded review agent
 
 **Context:** the brief asks for correct, reproducible financial figures and expressly
 criticizes both frontier-model arithmetic and excessive agent counts. **Why this choice:**
@@ -13,11 +13,17 @@ arithmetic and control decisions need repeatable rules; language understanding i
 for exceptions. One review agent around a small engine is easier to audit and explain.
 
 **Options:** LLM-generated statements; autonomous agents per entity; one deterministic
-pipeline with an exception-review assistant. **Choice:** the last option; no runtime LLM
-in the prototype. **Trade-off:** more explicit accounting code and less flexibility for
+pipeline with an exception-review assistant. **Choice:** the last option; live Claude
+tool use on Azure Foundry for review, with no LLM arithmetic or posting authority.
+Default offline mode is a reproducible rules baseline, not a model run.
+**Trade-off:** more explicit accounting code and less flexibility for
 unseen exports, in exchange for reproducibility and explainable arithmetic. **AI:** the
 handoff proposed deterministic Python; Codex adopted it and proposed a single review
-agent for the full product. No autonomous ledger authority was added.
+agent. The candidate requested implementation and selected Azure-hosted Claude.
+Codex implemented the Messages adapter, evidence tools, proposal-validation loop and
+adversarial fixtures. Live model behavior requires a separately recorded credentialed
+smoke test; passing protocol fixtures is not proof of model quality. No autonomous
+ledger authority was added. Invalid proposals receive bounded corrective feedback.
 
 ## 2. Missing evidence propagates as unknown
 

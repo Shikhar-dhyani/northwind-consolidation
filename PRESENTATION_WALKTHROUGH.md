@@ -19,7 +19,7 @@ python -m consolidation --data data --out output
 python -m pytest -q
 ```
 
-Expected on the original bundle: six blocked controls; 62 tests pass. The original run
+Expected on the original bundle: six blocked controls; 81 tests pass. The original run
 executes 64 runtime checks. Passing checks does not certify the blocked statements.
 Rerunning consolidation clears previous submission archives, so rebuild the ZIP after
 the final run if you need it: `python scripts/prepare_submission.py --require-pdfs`.
@@ -248,7 +248,7 @@ Do not read every line aloud. Explain each module's responsibility and show one 
 
 | Open | What to point at | What to explain |
 |---|---|---|
-| `pipeline.py:28` | `_calculate` calls in order; Decimal precision 40 | One orchestrator makes accounting order explicit; no runtime LLM or network |
+| `pipeline.py:33` | `_calculate` calls in order; Decimal precision 40 | Accounting remains deterministic; the run wrapper invokes review separately |
 | `inputs.py:67` | ERP normalization and mapping | Different source shapes become common postings; original files remain unchanged |
 | `model.py:35` | `Posting` | An amount travels with entity, account, currency, source references and stage |
 | `journals.py:8` | `apply_journals`; balance/date/net movements | Reject objectively invalid entries; hold unsupported business purpose |
@@ -264,9 +264,15 @@ All paths in the table are under `consolidation/`. Publication wraps calculation
 is not just another arithmetic step at the end. Explain the brief directory-swap gap
 and OS/process-interruption limits rather than claiming fully atomic publication.
 
-If asked where AI earns its place: "AI assisted design, coding, review and explanation.
-The proposed product assistant would summarize exceptions and suggest evidence-backed
-changes for human review. The prototype does not deploy that agent or let it post entries."
+If asked where AI earns its place: "AI assisted development. The implemented Claude
+review agent selects cases, reads bounded evidence and submits human-review proposals.
+Local checks return invalid actions/citations for correction. It has no posting tool.
+The default offline rules baseline makes no model call; --review live uses Azure Foundry."
+
+Open consolidation/review.py (run_review and EvidenceReview), then
+consolidation/claude_foundry.py (FoundryClaude.complete). Show output/review_report.json
+and output/agent_trace.json. Configure the ignored .env before demonstrating live mode.
+Use AGENT_REVIEW.md for the four tools, failure behavior and honest test boundaries.
 
 ## 13. Predict a changed input, then show the test — 3 minutes
 

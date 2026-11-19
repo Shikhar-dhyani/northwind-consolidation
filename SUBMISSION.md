@@ -15,6 +15,11 @@ The missing SGD closing rate and UK historical acquisition/equity evidence are d
 financial blockers. The brief explicitly permits null with reasons. No external value or
 invented company answer has been inserted to make the figures appear complete.
 
+The prototype now includes a live Azure Foundry Claude review agent and an explicitly
+labelled offline rules baseline. Packaging uses offline mode, requires no credentials
+and includes review_report.json and agent_trace.json. Live API mode is opt-in; its
+model prose cannot authorize or change the financial outputs. See README for configuration.
+
 ## Build the review archive
 
 Run financial outputs on their own with the README command. To build the additional
