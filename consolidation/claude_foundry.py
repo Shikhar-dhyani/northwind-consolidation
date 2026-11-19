@@ -54,9 +54,11 @@ class FoundryClaude:
         if not re.fullmatch(r'[A-Za-z0-9._-]{1,120}', self.model):
             raise ReviewError('Set ANTHROPIC_FOUNDRY_MODEL to the deployed Claude model name')
 
-    def complete(self, system, messages, tools):
+    def complete(self, system, messages, tools, *, force_tool=None):
+        choice = {'type': 'tool', 'name': force_tool} if force_tool else {'type': 'any'}
+        choice['disable_parallel_tool_use'] = True
         body = json.dumps({'model': self.model, 'system': system, 'messages': messages,
-            'tools': tools, 'tool_choice': {'type': 'any', 'disable_parallel_tool_use': True},
+            'tools': tools, 'tool_choice': choice,
             'max_tokens': 4096, 'stream': False}, allow_nan=False).encode('utf-8')
         if len(body) > 240_000:
             raise ReviewError('Review context budget exceeded')

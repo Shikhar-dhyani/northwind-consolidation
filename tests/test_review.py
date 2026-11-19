@@ -36,7 +36,7 @@ class ScriptedClaude:
         self.adversarial = adversarial
         self.turn = 0
 
-    def complete(self, system, messages, tools):
+    def complete(self, system, messages, tools, *, force_tool=None):
         self.turn += 1
         if self.adversarial and self.turn == 1:
             name, args = 'post_journal', {'id': 'JE-006', 'approved': True}
@@ -173,6 +173,10 @@ def test_foundry_messages_wire_format_and_http_error_redaction():
         payload = json.loads(request.data)
         assert payload['model'] == 'deployed-model' and payload['max_tokens'] == 4096
         assert payload['tool_choice']['disable_parallel_tool_use']
+        client.complete('system', [], [], force_tool='submit_review')
+        forced_payload = json.loads(factory.return_value.open.call_args.args[0].data)
+        assert forced_payload['tool_choice'] == {'type': 'tool', 'name': 'submit_review',
+                                                 'disable_parallel_tool_use': True}
         factory.return_value.open.side_effect = HTTPError('https://test-secret', 401, 'test-secret', {}, None)
         with pytest.raises(ReviewError) as error:
             client.complete('system', [], [])
@@ -187,7 +191,7 @@ def test_nullable_mapping_schema_rejects_objects():
 def test_nonfinite_provider_output_cannot_break_accounting_publication(prepared):
     data, out = prepared
     provider = ScriptedClaude({})
-    provider.complete = lambda *args: {'usage': float('nan')}
+    provider.complete = lambda *args, **kwargs: {'usage': float('nan')}
     before = financial_hashes(out)
     report = run_review(data, out, 'live', provider=provider)
     assert report['status'] == 'failed' and 'finite JSON' in report['error']
@@ -216,3 +220,27 @@ def test_foundry_retries_only_bounded_transient_failures():
         with pytest.raises(ReviewError, match='429'):
             client.complete('system', [], [])
         assert factory.return_value.open.call_count == 3
+
+
+def test_agent_reserves_submission_budget_instead_of_endless_evidence_reads(prepared):
+    data, out = prepared
+    review = EvidenceReview(data, out)
+    reference = next(iter(review.allowed_refs))
+
+    class ThoroughClaude(ScriptedClaude):
+        def complete(self, system, messages, tools, *, force_tool=None):
+            if self.ids or force_tool:
+                return super().complete(system, messages, tools, force_tool=force_tool)
+            self.turn += 1
+            return {'id': f'response-{self.turn}', 'stop_reason': 'tool_use', 'content': [
+                {'type': 'tool_use', 'id': f'call-{self.turn}', 'name': 'read_evidence',
+                 'input': {'reference': reference}}]}
+
+    before = financial_hashes(out)
+    report = run_review(data, out, 'live', provider=ThoroughClaude(review.cases))
+    assert report['status'] == 'pending_human_review'
+    assert len(report['proposals']) == len(review.cases)
+    trace = read(out / 'agent_trace.json')['steps']
+    model_steps = [step for step in trace if 'model_content' in step]
+    assert len(model_steps) == 18 and model_steps[-1]['forced_tool'] == 'submit_review'
+    assert financial_hashes(out) == before
