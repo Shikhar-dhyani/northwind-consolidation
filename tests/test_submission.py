@@ -16,8 +16,16 @@ def test_packager_verifies_both_claude_source_records(tmp_path, change):
     excerpt = record('excerpts.jsonl', 'Original later text')
     (tmp_path / 'SESSIONS.json').write_text(json.dumps({'sessions': [initial]}))
     (tmp_path / 'CLAUDE_REVIEW_PROVENANCE.json').write_text(json.dumps(excerpt))
+    runtime = tmp_path / 'runtime_claude/01_live'
+    runtime.mkdir(parents=True)
+    (runtime / 'agent_trace.json').write_bytes(b'Original runtime trace')
+    (runtime / 'PROVENANCE.json').write_text(json.dumps({'files': {
+        'agent_trace.json': hashlib.sha256((runtime / 'agent_trace.json').read_bytes()).hexdigest()}}))
     if change == 'none':
         transcript_bytes(tmp_path)
+        (runtime / 'agent_trace.json').write_bytes(b'Modified runtime trace')
+        with pytest.raises(RuntimeError, match='Transcript checksum mismatch'):
+            transcript_bytes(tmp_path)
     else:
         path = tmp_path / excerpt['path']
         if change == 'modified_excerpt':

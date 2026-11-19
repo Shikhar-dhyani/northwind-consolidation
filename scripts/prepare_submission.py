@@ -47,6 +47,12 @@ def transcript_bytes(folder):
     # The later excerpts have their own provenance record, in addition to the
     # original planning text indexed by SESSIONS.json.
     records.append(json.loads((folder / 'CLAUDE_REVIEW_PROVENANCE.json').read_text(encoding='utf-8')))
+    for provenance in (folder / 'runtime_claude').glob('*/PROVENANCE.json'):
+        for name, expected in json.loads(provenance.read_text(encoding='utf-8'))['files'].items():
+            path = (provenance.parent / name).resolve()
+            if not path.is_relative_to(provenance.parent.resolve()):
+                raise RuntimeError('Transcript provenance path escapes its session directory')
+            records.append({'path': str(path.relative_to(folder.resolve())), 'sha256': expected})
     for record in records:
         path = (folder / record['path']).resolve()
         if not path.is_relative_to(folder.resolve()) or not path.is_file():
