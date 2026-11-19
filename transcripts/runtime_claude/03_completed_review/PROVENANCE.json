@@ -1,0 +1,12 @@
+{
+  "kind": "actual Azure Foundry Claude model run",
+  "source_commit": "68144fa",
+  "result": "pending_human_review; 18 model responses and 11 proposals",
+  "quality_notes": [
+    "UK acquisition date is supplied in entities.csv; model incorrectly described it as absent. Model prose remains advisory."
+  ],
+  "files": {
+    "review_report.json": "c80fbc5a91bb0241ea2c0015381055835666016aaaf54773ea5b4c1f83001f06",
+    "agent_trace.json": "6d623b7a4e95a3285ef7902db925f5a5891d37fd0c21135e3c650e3f37692c49"
+  }
+}

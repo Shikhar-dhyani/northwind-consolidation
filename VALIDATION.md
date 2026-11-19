@@ -2,8 +2,17 @@
 
 ## Agent extension - 19 November 2026
 
+Credentialed live evidence is in transcripts/runtime_claude/. Azure accepted the local
+key and configured claude-sonnet-4-6 model. The completed run used 18 model responses
+and queued 11 proposals, with unchanged financial controls. Both earlier unsuccessful
+attempts are retained: retrieval consumed all 20 steps, then final generation exceeded
+the original 30-second timeout. Fix 159c290 reserves the last three steps for submission
+and corrections; fix 68144fa allows 90 seconds and avoids automatic timeout retries.
+The regression suite now has 82 cases. The model wrongly asked for a UK acquisition
+date already supplied in entities.csv; this prose error is recorded, not rewritten.
+
 Commit 94ae9b8 adds one evidence-review agent and the Azure Foundry Claude Messages
-adapter. The original 62 test cases are retained; 19 agent cases bring the suite to 81.
+adapter. The original 62 test cases are retained; 20 agent cases bring the suite to 82.
 Financial runtime checks remain 64 because advisory review is separately validated.
 Default financial controls are compared against the frozen original baseline.
 
@@ -17,10 +26,9 @@ bounded transient retries. All proposals remain pending human review, and financ
 artifact hashes do not change when the agent runs.
 
 Provider-request encoding and mocked response handling are tested independently of
-the agent loop. These are integration/protocol fixtures, not proof of a successful
-credentialed Claude call or model quality. Live smoke-test evidence requires a deployed
-model and the candidate's key in ignored local configuration. No live success is inferred
-from offline mode. CLI exit 3 reports review failure while retaining accounting results;
+the agent loop. These fixtures are not model-quality certification. The separate
+credentialed smoke test and its raw traces establish live operation. No live success is
+inferred from offline mode. CLI exit 3 reports review failure while retaining accounting results;
 accounting failure skips review and replaces stale agent artifacts with blocked outputs.
 
 ## Audit remediation - final verification
@@ -31,7 +39,7 @@ limits. All 14 original audit probes were rerun and their outcomes reviewed alon
 the regression suite. The additional packaging defect below was fixed; no numerical
 regression was found in these checks. Original source hashes and default controls match.
 
-**81 tests pass; 64 runtime checks pass on the original bundle.** After every fix,
+**82 tests pass; 64 runtime checks pass on the original bundle.** After every fix,
 the full suite was run, the committed repository was cloned into a new temporary
 directory, the suite and one-command consolidation were run there, and the resulting
 12-key control JSON was compared with a frozen pre-fix baseline. Every comparison
@@ -117,7 +125,7 @@ Tests use temporary copies when changing inputs. The committed source bundle is 
 edited. Runtime uses Decimal at precision 40; two-place rounding happens at output only.
 Passing controls validate the supported workings, not the blocked financial statements.
 
-Final local verification: **81 tests passed** on Windows with Python 3.14.3, including
+Final local verification: **82 tests passed** on Windows with Python 3.14.3, including
 a fresh local Git clone, source-byte integrity, and the one-command output run. The CI
 workflow is configured for Python 3.11 and 3.14 on Linux; no remote CI run is claimed.
 

@@ -192,8 +192,8 @@ are rebuilt. There is no review UI, persistent decision store, policy language, 
 input snapshot lock or atomically exchanged readiness pointer. Production needs immutable
 runs, an atomic ready pointer and access control. review_report.json holds pending
 proposals; agent_trace.json records calls, evidence, tool rejections and model usage.
-Sources are checked against the run manifest. API requests have 30-second timeouts,
-three bounded attempts for transient failures, token/context limits and no redirects.
+Sources are checked against the run manifest. API requests have 90-second timeouts,
+bounded transient retries, no automatic timeout retries, token/context limits and no redirects.
 Review failure preserves financial results, records failure and gives CLI exit code 3.
 At scale, stream/partition ledger data and normalize provenance rather than repeating
 large source lists. The Claude planning conversation is preserved as supplied by the

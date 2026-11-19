@@ -1,5 +1,11 @@
 # AI session records
 
+Actual Azure Foundry Claude application runs are preserved in runtime_claude/. These
+are separate from the development conversations. The first two attempts failed (step
+budget and final-request timeout); the third completed with 11 advisory proposals.
+Each folder contains the unedited review report, tool transcript and checksum provenance.
+Model prose remains unverified and includes a documented unnecessary UK-date request.
+
 `codex-session.jsonl` is an ordered export of the current session's user-visible messages,
 tool calls and returned results. Failed tests, attempted commands, retries and dead ends
 remain present. Text is not summarized or cleaned up. Only personal data and recognized

@@ -72,8 +72,11 @@ tool calls/results and validation feedback; private reasoning and API headers ar
 recorded. It is separate from the development transcript in transcripts/.
 
 The loop permits 20 model steps, one tool call per step, 4,096 output tokens per request,
-a bounded context and response size. HTTP requests have a 30-second timeout and at
-most three attempts for transient failures; authentication failures are not retried.
+a bounded context and response size. Once all cases have been inspected, the final
+three steps force submit_review, reserving room for validation corrections rather than
+unbounded extra evidence collection. HTTP requests have a 90-second timeout and at
+most three attempts for transient failures; authentication failures and timed-out
+generations are not automatically retried to avoid duplicate generation charges.
 Redirects are refused to avoid forwarding a key. Endpoint validation accepts only the
 Azure Foundry HTTPS resource form. Error bodies and credentials are not logged.
 
@@ -82,14 +85,20 @@ explicit failed review with no accepted proposals. CLI exit 3 distinguishes that
 accounting failure (exit 2). Accounting failure skips the agent and replaces stale
 review outputs with blocked artifacts. Code 0 can still include disclosed financial nulls.
 
-## Validation and current smoke-test boundary
+## Validation and live smoke test
 
 tests/test_review.py exercises real tool dispatch, source-manifest checks, prompt-injected
 evidence, a forbidden posting attempt, invented citations, corrective feedback, finite
 JSON, credential redaction, retries and CLI failure semantics. The scripted Claude
 fixture is a protocol test double, not an actual model call or model-quality evaluation.
-Live acceptance must be checked with the candidate's deployed model and local key;
-the repository does not claim a successful network smoke test without its actual trace.
+A credentialed Azure run with configured model claude-sonnet-4-6 completed with 18
+model responses and 11 pending human-review proposals. Original financial controls
+were unchanged. Actual unedited reports and tool transcripts are preserved under
+transcripts/runtime_claude/: the first run exhausted its retrieval budget, the second
+timed out on final generation, and the third completed after the bounded fixes.
+PROVENANCE.json records checksums and quality notes. The model incorrectly described
+the UK acquisition date as absent even though entities.csv supplies it; protocol success
+does not validate all prose. Human review must correct that unnecessary request.
 
 The submission packager intentionally regenerates the offline baseline. A live trace
 should be preserved separately before repackaging if it is needed as review evidence.

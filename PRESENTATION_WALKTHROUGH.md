@@ -19,7 +19,7 @@ python -m consolidation --data data --out output
 python -m pytest -q
 ```
 
-Expected on the original bundle: six blocked controls; 81 tests pass. The original run
+Expected on the original bundle: six blocked controls; 82 tests pass. The original run
 executes 64 runtime checks. Passing checks does not certify the blocked statements.
 Rerunning consolidation clears previous submission archives, so rebuild the ZIP after
 the final run if you need it: `python scripts/prepare_submission.py --require-pdfs`.

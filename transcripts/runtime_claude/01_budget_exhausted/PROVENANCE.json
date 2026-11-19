@@ -1,0 +1,9 @@
+{
+  "kind": "actual Azure Foundry Claude model run",
+  "source_commit": "87ff4ae6f37b6e8ced65c6cb3288afb50459f4a9",
+  "result": "step budget exhausted; retained unedited",
+  "files": {
+    "review_report.json": "d3a17d35a32539d98511861636ac187d1da9f45332d3cfbe1f4f353b45371c56",
+    "agent_trace.json": "e8b3334ed3dbae66465b409d04b4968999b27132a96582e73134f62a8d532a3e"
+  }
+}
