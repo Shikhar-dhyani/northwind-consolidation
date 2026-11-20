@@ -1,6 +1,8 @@
 """One bounded evidence-review agent. Proposals cannot alter accounting outputs."""
 
+import csv
 import hashlib
+import io
 import json
 from pathlib import Path
 import re
@@ -86,9 +88,17 @@ class EvidenceReview:
         self.allowed_refs = {r for i in self.cases.values() for r in i['sources']}
         self.group_codes = set()
         # Group codes are trusted only after the accounting engine validated the chart.
-        import csv
-        with (self.data / 'group_coa.csv').open(encoding='utf-8-sig', newline='') as stream:
-            self.group_codes = {r['account_code'] for r in csv.DictReader(stream)}
+        chart = self.verified_bytes('group_coa.csv').decode('utf-8-sig')
+        self.group_codes = {r['account_code'] for r in csv.DictReader(io.StringIO(chart))}
+
+    def verified_bytes(self, name):
+        path = (self.data / name).resolve()
+        if not path.is_relative_to(self.data):
+            raise ReviewError('Source no longer matches the accounting input manifest')
+        payload = path.read_bytes()
+        if hashlib.sha256(payload).hexdigest() != self.manifest.get(name):
+            raise ReviewError('Source no longer matches the accounting input manifest')
+        return payload
 
     def read(self, reference):
         if reference not in self.allowed_refs:
@@ -97,10 +107,8 @@ class EvidenceReview:
         if not match:
             raise ReviewError('Unsupported source reference')
         name, line, pointer = match.groups()
-        path = (self.data / name).resolve()
-        if not path.is_relative_to(self.data) or hashlib.sha256(path.read_bytes()).hexdigest() != self.manifest.get(name):
-            raise ReviewError('Source no longer matches the accounting input manifest')
-        text = path.read_text(encoding='utf-8-sig')
+        # Hash and decode the same byte snapshot; do not reopen between them.
+        text = self.verified_bytes(name).decode('utf-8-sig')
         if pointer:
             value = json.loads(text)
             for part in pointer.lstrip('/').split('/'):
@@ -155,6 +163,10 @@ class EvidenceReview:
                     raise ReviewError('This journal case is not a mapping problem')
             elif mapping is not None:
                 raise ReviewError('Only mapping proposals may name a proposed account')
+        # Reject stale proposals if any input changed while the model deliberated.
+        # This is a final check, not a substitute for production snapshot locking.
+        for name in self.manifest:
+            self.verified_bytes(name)
         self.proposals = [{**p, 'status': 'pending_human_review'} for p in proposals]
         return {'accepted_for_review': True, 'accounting_changed': False}
 

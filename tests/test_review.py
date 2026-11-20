@@ -118,6 +118,50 @@ def test_review_detects_sources_changed_since_calculation(prepared):
         review.dispatch('get_case', {'issue_id': case['id']})
 
 
+def test_evidence_excerpt_uses_the_same_bytes_as_its_hash(prepared):
+    data, out = prepared
+    review = EvidenceReview(data, out)
+    reference = next(ref for ref in review.allowed_refs if ref == 'data/tb_uk.csv:3')
+    target = (data / 'tb_uk.csv').resolve()
+    original_read = Path.read_bytes
+    changed = False
+
+    def edit_after_snapshot(path):
+        nonlocal changed
+        payload = original_read(path)
+        if path.resolve() == target and not changed:
+            changed = True
+            path.write_bytes(payload.replace(b'23010.00', b'99999.00'))
+        return payload
+
+    with patch.object(Path, 'read_bytes', edit_after_snapshot):
+        result = review.read(reference)
+    assert '23010.00' in result['untrusted_excerpt']
+    assert '99999.00' not in result['untrusted_excerpt']
+
+
+def test_review_rejects_chart_changes_after_accounting(prepared):
+    data, out = prepared
+    chart = data / 'group_coa.csv'
+    chart.write_bytes(chart.read_bytes().replace(b'1100,Cash', b'9999,Cash'))
+    with pytest.raises(ReviewError, match='manifest'):
+        EvidenceReview(data, out)
+
+
+def test_submit_rejects_evidence_changed_after_agent_inspection(prepared):
+    data, out = prepared
+    review = EvidenceReview(data, out)
+    for issue_id in review.cases:
+        review.dispatch('get_case', {'issue_id': issue_id})
+    proposals = [{k: v for k, v in p.items() if k != 'status'}
+                 for p in read(out / 'review_report.json')['proposals']]
+    path = data / 'tb_uk.csv'
+    path.write_bytes(path.read_bytes() + b'\n')
+    with pytest.raises(ReviewError, match='manifest'):
+        review.dispatch('submit_review', {'proposals': proposals})
+    assert review.proposals == []
+
+
 def test_budget_exhaustion_is_visible_and_retains_financial_results(prepared):
     data, out = prepared
     before = financial_hashes(out)
