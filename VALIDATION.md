@@ -1,5 +1,25 @@
 # Validation evidence
 
+## Final agent audit - 20 November 2026
+
+Audit of the Messages client, tool capabilities, evidence retrieval, proposal gate,
+failure publication and packaging reproduced three additional source-integrity gaps.
+Regression tests failed before fix c3de623 and passed after it:
+
+- A file could change between hashing its bytes and reopening it for an excerpt.
+  Evidence is now decoded from the exact byte snapshot whose hash was verified.
+- The chart used to validate proposed account codes was reread without checking its
+  manifest hash. The review broker now constructs its chart from verified bytes.
+- A source could change after model inspection but before proposal submission.
+  Submission now rechecks every input against the accounting run manifest before
+  accepting any proposals. This does not claim OS-level immutable snapshot locking.
+
+The suite now contains 85 cases: the original 62 plus 23 agent cases. All 14 original
+audit probes were rerun; default controls remain equal to the frozen baseline.
+The credentialed model evidence from 19 November is preserved unedited with its
+original code provenance. This audit did not make extra billable model calls; the new
+guards are verified by adversarial source-edit tests and clean-clone execution.
+
 ## Agent extension - 19 November 2026
 
 Credentialed live evidence is in transcripts/runtime_claude/. Azure accepted the local
@@ -8,11 +28,11 @@ and queued 11 proposals, with unchanged financial controls. Both earlier unsucce
 attempts are retained: retrieval consumed all 20 steps, then final generation exceeded
 the original 30-second timeout. Fix 159c290 reserves the last three steps for submission
 and corrections; fix 68144fa allows 90 seconds and avoids automatic timeout retries.
-The regression suite now has 82 cases. The model wrongly asked for a UK acquisition
+The regression suite now has 85 cases. The model wrongly asked for a UK acquisition
 date already supplied in entities.csv; this prose error is recorded, not rewritten.
 
 Commit 94ae9b8 adds one evidence-review agent and the Azure Foundry Claude Messages
-adapter. The original 62 test cases are retained; 20 agent cases bring the suite to 82.
+adapter. The original 62 test cases are retained; 23 agent cases bring the suite to 85.
 Financial runtime checks remain 64 because advisory review is separately validated.
 Default financial controls are compared against the frozen original baseline.
 
@@ -39,7 +59,7 @@ limits. All 14 original audit probes were rerun and their outcomes reviewed alon
 the regression suite. The additional packaging defect below was fixed; no numerical
 regression was found in these checks. Original source hashes and default controls match.
 
-**82 tests pass; 64 runtime checks pass on the original bundle.** After every fix,
+**85 tests pass; 64 runtime checks pass on the original bundle.** After every fix,
 the full suite was run, the committed repository was cloned into a new temporary
 directory, the suite and one-command consolidation were run there, and the resulting
 12-key control JSON was compared with a frozen pre-fix baseline. Every comparison
@@ -125,7 +145,7 @@ Tests use temporary copies when changing inputs. The committed source bundle is 
 edited. Runtime uses Decimal at precision 40; two-place rounding happens at output only.
 Passing controls validate the supported workings, not the blocked financial statements.
 
-Final local verification: **82 tests passed** on Windows with Python 3.14.3, including
+Final local verification: **85 tests passed** on Windows with Python 3.14.3, including
 a fresh local Git clone, source-byte integrity, and the one-command output run. The CI
 workflow is configured for Python 3.11 and 3.14 on Linux; no remote CI run is claimed.
 

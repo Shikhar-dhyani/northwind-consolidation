@@ -46,6 +46,9 @@ only in the ignored .env. No OpenAI API key or SDK is used.
 5. Claude calls submit_review. Local checks require exactly one proposal per selected
    case, permitted actions, inspected citations and valid mapping targets. Rejected tool
    calls return errors to Claude, allowing correction within the remaining budget.
+   Excerpts are decoded from the same bytes that were hashed; the chart is verified
+   too. Submission rechecks every input so changed evidence cannot yield accepted
+   proposals against the old accounting run. OS-level immutable snapshots remain future work.
 6. Valid proposals are saved as pending_human_review. The financial output is unchanged.
 7. A human obtains supporting evidence, reviews corrections and reruns the full engine.
    There is no automatic approval, source rewrite or persistent override application.
