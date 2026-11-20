@@ -1,9 +1,9 @@
 {
   "source_session": "rollout-2026-11-13T21-15-10-01a1d595-897b-7970-b806-8e5bf2d6f652.jsonl",
-  "last_record_timestamp": "2026-11-19T16:12:37.265Z",
-  "exported_records": 707,
+  "last_record_timestamp": "2026-11-20T05:04:59.820Z",
+  "exported_records": 735,
   "current_session_complete": false,
-  "completed_turns": 27,
+  "completed_turns": 28,
   "active_turn_included_through_snapshot": true,
   "earlier_planning_sessions_available": true,
   "redactions": [
@@ -16,11 +16,11 @@
   ],
   "excluded_internal_record_counts": {
     "session_meta": 1,
-    "event_msg": 1385,
-    "internal_response_item": 453,
-    "world_state": 15,
-    "turn_context": 29,
-    "token_usage_record": 307,
+    "event_msg": 1442,
+    "internal_response_item": 470,
+    "world_state": 16,
+    "turn_context": 30,
+    "token_usage_record": 319,
     "compacted": 1
   },
   "note": "Visible messages and tool calls/results in original order, including mistakes. Completion is detected from session events. An active turn is captured through the snapshot boundary; rerun after it finishes to include its final records. See SESSIONS.json for prior-session provenance."
